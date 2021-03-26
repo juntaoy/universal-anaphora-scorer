@@ -1,0 +1,19 @@
+# global.columns = ID FORM LEMMA UPOS XPOS FEATS HEAD DEPREL DEPS MISC IDENTITY BRIDGING DISCOURSE_DEIXIS REFERENCE NOM_SEM
+# newdoc id = PluralTestCases/TC-PA
+# sent_id = TC-PA-1
+# text = _ _ _
+1     _  _  _  _  _  _  _  _  _  (EntityID=1|MarkableID=markable_a|SemType=dn|ElementOf=4(EntityID=2|MarkableID=markable_c|SemType=dn)  _  _  _  
+2     _  _  _  _  _  _  _  _  _  )  _  _  _  
+3     _  _  _  _  _  _  _  _  _  _  _  _  _  
+
+# sent_id = TC-PA-2
+# text = _ _ _ _ _ _ _ _ _
+4     _  _  _  _  _  _  _  _  _  (EntityID=1|MarkableID=markable_b|SemType=do)  _  _  _  
+5     _  _  _  _  _  _  _  _  _  (EntityID=2|MarkableID=markable_d|SemType=do)  _  _  _  
+6     _  _  _  _  _  _  _  _  _  _  _  _  _  
+7     _  _  _  _  _  _  _  _  _  (EntityID=3|MarkableID=markable_e|SemType=dn|ElementOf=4  _  _  _  
+8     _  _  _  _  _  _  _  _  _  _  _  _  _  
+9     _  _  _  _  _  _  _  _  _  )  _  _  _  
+10    _  _  _  _  _  _  _  _  _  (EntityID=4|MarkableID=markable_f|SemType=do  _  _  _  
+11    _  _  _  _  _  _  _  _  _  )  _  _  _  
+12    _  _  _  _  _  _  _  _  _  (EntityID=4|MarkableID=markable_g|SemType=do)  _  _  _  
