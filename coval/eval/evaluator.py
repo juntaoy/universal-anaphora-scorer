@@ -400,15 +400,16 @@ def lea(input_clusters, output_clusters, mention_to_gold, split_antecedent_to_go
       common_links = 0
       all_links = len(c) * (len(c) - 1) / 2.0
       for i, m in enumerate(c):
+        if is_split_antecedent(m):
+          has_split_antecedent = True
         link_score = 1
         if is_split_antecedent(m) and m in split_antecedent_to_gold:
           m, link_score = split_antecedent_to_gold[m]
-          has_split_antecedent = True
         if m in mention_to_gold:
           for m2 in c[i + 1:]:
             if is_split_antecedent(m2) and m2 in split_antecedent_to_gold:
               m2, link_score2 = split_antecedent_to_gold[m2]
-              has_split_antecedent = True
+              # has_split_antecedent = True
               link_score *=link_score2
             if m2 in mention_to_gold and mention_to_gold[
                 m] == mention_to_gold[m2]:
