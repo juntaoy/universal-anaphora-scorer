@@ -112,8 +112,14 @@ class Evaluator:
     key_split_antecedents = [m for cl in key_clusters for m in cl if is_split_antecedent(m)]
     sys_split_antecedents = [m for cl in sys_clusters for m in cl if is_split_antecedent(m)]
 
-    if len(key_split_antecedents) == 0 or len(sys_split_antecedents) == 0:
+    if len(key_split_antecedents) == 0 and len(sys_split_antecedents) == 0:
       return {}, {}, {}
+
+    if len(key_split_antecedents) == 0:
+      key_split_antecedents.append(markable.get_dummy_split_antecedent())
+
+    if len(sys_split_antecedents) == 0:
+      sys_split_antecedents.append(markable.get_dummy_split_antecedent())
 
     key_clusters = [list(s_ant.split_antecedent_members) for s_ant in key_split_antecedents]
     sys_clusters = [list(s_ant.split_antecedent_members) for s_ant in sys_split_antecedents]
