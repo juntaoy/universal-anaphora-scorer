@@ -1,3 +1,6 @@
+def get_dummy_split_antecedent():
+  return Markable('', 0, 0, None,'referring','')
+
 class Markable:
   def __init__(self, doc_name, start, end, MIN, is_referring, words,is_split_antecedent=False,split_antecedent_members=set()):
     self.doc_name = doc_name
@@ -55,3 +58,4 @@ class Markable:
       #     self.doc_name, self.start, self.end, ' '.join(self.words),
       #     '(%d, %d)' % self.MIN if self.MIN else '',
       #     self.is_referring))
+
