@@ -36,10 +36,10 @@ class Markable:
             and self.end == other.end)
     return NotImplemented
 
-  def __neq__(self, other):
-    if isinstance(other, self.__class__):
-      return self.__eq__(other)
-    return NotImplemented
+#   def __neq__(self, other):
+#     if isinstance(other, self.__class__):
+#       return self.__eq__(other)
+#     return NotImplemented
 
   def __hash__(self):
     if self.is_split_antecedent:
