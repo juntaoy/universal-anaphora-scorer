@@ -47,9 +47,9 @@ def evaluate_bridgings(doc_bridging_infos):
       else:
         s_ant = sys_bridging_pairs[s_ana]
         k_ant = key_bridging_pairs[s_ana]
-        if s_ant != k_ant:
+        if not s_ant == k_ant:
           fp_fbm+=1
-          if s_ant not in mention_to_gold or mention_to_gold[s_ant] != mention_to_gold[k_ant]:
+          if s_ant not in mention_to_gold or not mention_to_gold[s_ant] == mention_to_gold[k_ant]:
             fp_fbe+=1
   recall_ar = tp_ar / float(tp_ar + fn_ar) if (tp_ar + fn_ar) > 0 else 0
   precision_ar = tp_ar / float(tp_ar + fp_ar) if (tp_ar + fp_ar) > 0 else 0
@@ -468,7 +468,7 @@ def blancn(sys_clusters, key_clusters, mention_to_sys, split_antecedent_to_sys_f
             link_score2 = 1
             if is_split_antecedent(m2) and m2 in split_antecedent_to_sys_f:
               m2, link_score2 = split_antecedent_to_sys_f[m2]
-            if m2 in mention_to_sys and mention_to_sys[m] != mention_to_sys[m2]:
+            if m2 in mention_to_sys and not mention_to_sys[m] == mention_to_sys[m2]:
               common_links += link_score * link_score2
 
     num += common_links
