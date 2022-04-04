@@ -23,11 +23,11 @@ class Mention:
                    and self.start == other.start and self.end == other.end 
         return NotImplemented
     
-    def __neq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__eq__(other)
+#     def __neq__(self, other):
+#         if isinstance(other, self.__class__):
+#             return self.__eq__(other)
         
-        return NotImplemented
+#         return NotImplemented
     
     def __str__(self):
         return str("DOC: " +self.doc_name+ ", sentence number: " + str(self.sent_num) 
