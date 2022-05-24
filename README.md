@@ -1,4 +1,16 @@
 # The Universal Anaphora Scorer
+## Introduction
+This repository contains code introduced in the following paper:
+
+**[The Universal Anaphora Scorer]()**  
+Juntao Yu, Sopan Khosla, Nafise Moosavi, Silviu Paun,  Sameer Pradhan and Massimo Poesio  
+In *Proceedings of the 13th Language Resources and Evaluation Conference (LREC)*, 2022
+
+**[Scoring Coreference Chains with Split-Antecedent Anaphors]()**  
+Silviu Paun*, Juntao Yu*, Nafise Moosavi and Massimo Poesio  `*equal contribution`  
+In *Arxiv.org*, 2022 
+ 
+
 
 ## About
 
