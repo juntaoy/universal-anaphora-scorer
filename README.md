@@ -6,7 +6,7 @@ This repository contains code introduced in the following paper:
 Juntao Yu, Sopan Khosla, Nafise Moosavi, Silviu Paun,  Sameer Pradhan and Massimo Poesio  
 In *Proceedings of the 13th Language Resources and Evaluation Conference (LREC)*, 2022
 
-**[Scoring Coreference Chains with Split-Antecedent Anaphors]()**  
+**[Scoring Coreference Chains with Split-Antecedent Anaphors](https://arxiv.org/abs/2205.12323)**  
 Silviu Paun*, Juntao Yu*, Nafise Moosavi and Massimo Poesio  `*equal contribution`  
 In *Arxiv.org*, 2022 
  
