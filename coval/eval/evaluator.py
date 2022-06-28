@@ -30,7 +30,10 @@ def evaluate_bridgings(doc_bridging_infos):
           tp_fbm+=1
         else:
           fn_fbm+=1
-          if s_ant in mention_to_gold and mention_to_gold[k_ant] == mention_to_gold[s_ant]:
+          #k_ant in mention_to_gold is used for bridging ant is actually non-referring,
+          # in this case the ant will not in mention_to_gold, but non-referring always
+          # is singleton so k_ant == s_ant already checked the correction.
+          if s_ant in mention_to_gold and k_ant in mention_to_gold and mention_to_gold[k_ant] == mention_to_gold[s_ant]:
             tp_fbe+=1
           else:
             fn_fbe+=1
@@ -49,7 +52,7 @@ def evaluate_bridgings(doc_bridging_infos):
         k_ant = key_bridging_pairs[s_ana]
         if not s_ant == k_ant:
           fp_fbm+=1
-          if s_ant not in mention_to_gold or not mention_to_gold[s_ant] == mention_to_gold[k_ant]:
+          if s_ant not in mention_to_gold or k_ant not in mention_to_gold or not mention_to_gold[s_ant] == mention_to_gold[k_ant]:
             fp_fbe+=1
   recall_ar = tp_ar / float(tp_ar + fn_ar) if (tp_ar + fn_ar) > 0 else 0
   precision_ar = tp_ar / float(tp_ar + fp_ar) if (tp_ar + fp_ar) > 0 else 0
