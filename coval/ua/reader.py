@@ -2,11 +2,13 @@ from os import walk
 from os.path import isfile, join
 from coval.ua import markable
 from collections import deque
+import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 __author__ = 'ns-moosavi; juntaoy'
 
-def get_doc_markables(doc_name, doc_lines, extract_MIN, keep_bridging, word_column=1,
-    markable_column=10, bridging_column=11, print_debug=False):
+def get_doc_markables(doc_name, doc_lines, extract_MIN, use_CRAFT_MIN, keep_bridging, word_column=1,
+    markable_column=10, bridging_column=11, allow_boundary_crossing=False, print_debug=False):
   markables_cluster = {}
   markables_start = {}
   markables_end = {}
@@ -24,9 +26,14 @@ def get_doc_markables(doc_name, doc_lines, extract_MIN, keep_bridging, word_colu
       markable_annotations = columns[markable_column].split("(")
       if markable_annotations[0]:
         #the close bracket
-        for _ in range(len(markable_annotations[0])):
-          markable_id = stack.pop()
-          markables_end[markable_id] = word_index
+        if allow_boundary_crossing:
+          for markable_id in markable_annotations[0].split(")"):
+            if len(markable_id) > 0:
+              markables_end[markable_id].append(word_index)
+        else:
+          for _ in range(len(markable_annotations[0])):
+            markable_id = stack.pop()
+            markables_end[markable_id].append(word_index)
 
       for markable_annotation in markable_annotations[1:]:
         if markable_annotation.endswith(')'):
@@ -38,22 +45,27 @@ def get_doc_markables(doc_name, doc_lines, extract_MIN, keep_bridging, word_colu
         markable_id = markable_info['MarkableID']
         cluster_id = markable_info['EntityID']
         markables_cluster[markable_id] = cluster_id
-        markables_start[markable_id] = word_index
+        if markable_id not in markables_start:
+          markables_start[markable_id] = []
+          markables_end[markable_id] = []
+
+        markables_start[markable_id].append(word_index)
         if single_word:
-          markables_end[markable_id] = word_index
-        else:
+          markables_end[markable_id].append(word_index)
+        elif not allow_boundary_crossing:
           stack.append(markable_id)
 
-        markables_MIN[markable_id] = None
-        if extract_MIN and 'Min' in markable_info:
-          MIN_Span = markable_info['Min'].split(',')
-          if len(MIN_Span) == 2:
-            MIN_start = int(MIN_Span[0]) - 1
-            MIN_end = int(MIN_Span[1]) - 1
-          else:
-            MIN_start = int(MIN_Span[0]) - 1
-            MIN_end = MIN_start
-          markables_MIN[markable_id] = (MIN_start,MIN_end)
+        if markable_id not in markables_MIN:
+          markables_MIN[markable_id] = None
+          if extract_MIN and 'Min' in markable_info:
+            MIN_Span = markable_info['Min'].split(',')
+            if len(MIN_Span) == 2:
+              MIN_start = int(MIN_Span[0]) - 1
+              MIN_end = int(MIN_Span[1]) - 1
+            else:
+              MIN_start = int(MIN_Span[0]) - 1
+              MIN_end = MIN_start
+            markables_MIN[markable_id] = [MIN_start,MIN_end]
 
         markables_coref_tag[markable_id] = 'referring'
         if cluster_id.endswith('-Pseudo'):
@@ -81,10 +93,9 @@ def get_doc_markables(doc_name, doc_lines, extract_MIN, keep_bridging, word_colu
   for markable_id in markables_cluster:
     m = markable.Markable(
         doc_name, markables_start[markable_id],
-        markables_end[markable_id], markables_MIN[markable_id],
+        markables_end[markable_id], [markables_start[markable_id][0],markables_end[markable_id][0]] if use_CRAFT_MIN else markables_MIN[markable_id],
         markables_coref_tag[markable_id],
-        all_words[markables_start[markable_id]:
-            markables_end[markable_id] + 1])
+        [all_words[s:e+1] for s,e in zip(markables_start[markable_id],markables_end[markable_id])])
     id2markable[markable_id] = m
     if markables_cluster[markable_id] not in clusters:
       clusters[markables_cluster[markable_id]] = (
@@ -131,8 +142,8 @@ def process_clusters(clusters, keep_singletons, keep_non_referring,keep_split_an
         else:
           split_clusters.add(tuple(curr_cl))
       split_m = markable.Markable(
-        doc_name, -1,
-        -1, None,
+        doc_name, [],
+        [], None,
         'referring',
         '',
         is_split_antecedent=True,
@@ -186,6 +197,8 @@ def get_coref_infos(key_file,
     keep_non_referring,
     evaluate_discourse_deixis,
     use_MIN,
+    use_CRAFT,
+    allow_boundary_crossing=False,
     print_debug=False):
   key_docs = get_all_docs(key_file)
   sys_docs = get_all_docs(sys_file)
@@ -201,8 +214,8 @@ def get_coref_infos(key_file,
           ' does not exist in the system output.')
       continue
     markable_column = 12 if evaluate_discourse_deixis else 10
-    key_clusters, key_bridging_pairs = get_doc_markables(doc, key_docs[doc], use_MIN, keep_bridging,markable_column=markable_column)
-    sys_clusters, sys_bridging_pairs = get_doc_markables(doc, sys_docs[doc], False, keep_bridging,markable_column=markable_column)
+    key_clusters, key_bridging_pairs = get_doc_markables(doc, key_docs[doc], use_MIN,use_CRAFT, keep_bridging,markable_column=markable_column,allow_boundary_crossing=allow_boundary_crossing)
+    sys_clusters, sys_bridging_pairs = get_doc_markables(doc, sys_docs[doc], False,False, keep_bridging,markable_column=markable_column,allow_boundary_crossing=allow_boundary_crossing)
 
     (key_clusters, key_non_referrings, key_removed_non_referring,
         key_removed_singletons) = process_clusters(
@@ -210,12 +223,12 @@ def get_coref_infos(key_file,
     (sys_clusters, sys_non_referrings, sys_removed_non_referring,
         sys_removed_singletons) = process_clusters(
         sys_clusters, keep_singletons, keep_non_referring,keep_split_antecedent)
-
-    sys_mention_key_cluster = get_markable_assignments(key_clusters)
-    key_mention_sys_cluster = get_markable_assignments(sys_clusters)
+    if print_debug:
+      print(doc)
+    sys_mention_key_cluster,key_mention_sys_cluster,partial_match_map = get_markable_assignments(key_clusters,sys_clusters,use_MIN,use_CRAFT,print_debug)
 
     doc_coref_infos[doc] = (key_clusters, sys_clusters,
-          key_mention_sys_cluster, sys_mention_key_cluster)
+          key_mention_sys_cluster, sys_mention_key_cluster,partial_match_map)
     doc_non_referrig_infos[doc] = (key_non_referrings, sys_non_referrings)
     doc_bridging_infos[doc] = (key_bridging_pairs, sys_bridging_pairs, sys_mention_key_cluster)
 
@@ -233,12 +246,83 @@ def get_coref_infos(key_file,
 
 
 
-def get_markable_assignments(clusters):
-  markable_cluster_ids = {}
-  for cluster_id, cluster in enumerate(clusters):
+def get_markable_assignments(key_clusters,sys_clusters,use_MIN,use_CRAFT,print_debug=False):
+  key_mention_set = set([m for cl in key_clusters for m in cl])
+  sys_mention_set = set([m for cl in sys_clusters for m in cl])
+  s_num = len(key_mention_set&sys_mention_set)
+  partial_match_map = {}
+  if print_debug:
+    print('Total key mentions:',len(key_mention_set))
+    print('Total response mentions:',len(sys_mention_set))
+    print('Strictly correct indentified mentions:',s_num)
+  key_non_aligned = []
+  sys_non_aligned = []
+
+  sys_mention_key_cluster = {}
+  for cluster_id, cluster in enumerate(key_clusters):
     for m in cluster:
-      markable_cluster_ids[m] = cluster_id
-  return markable_cluster_ids
+      sys_mention_key_cluster[m] = cluster_id
+      if not m.is_split_antecedent and m not in sys_mention_set:
+        key_non_aligned.append(m)
+  key_mention_sys_cluster = {}
+  for cluster_id, cluster in enumerate(sys_clusters):
+    for m in cluster:
+      key_mention_sys_cluster[m] = cluster_id
+      if not m.is_split_antecedent and m not in key_mention_set:
+        sys_non_aligned.append(m)
+
+  p_num = 0
+  if use_MIN and len(key_non_aligned) > 0 and len(sys_non_aligned)>0: #partial matching
+    # sort the mentions in order by start and end indices so that the KM algorithm can make
+    # the alignment using same rule as corefUD:
+    # 1. pick the mention that overlaps with m with proportionally smallest difference
+    # 2. if still more than one n remain, pick the one that starts earlier in the document
+    # 3. if still more than one n remain, pick the one that ends earlier in the document
+    # 1 were done using similarity score based on proportional token overlapping,
+    # 2 and 3 were done by sorting so that the mentions were sorted with the starts and ends.
+    key_non_aligned.sort()
+    sys_non_aligned.sort()
+    # print([str(key) for key in key_non_aligned])
+    # print([str(sys) for sys in sys_non_aligned])
+    if use_CRAFT:
+      key_used = {km:False for km in key_non_aligned}
+      key_non_aligned = set(key_non_aligned)
+      for scl in sys_clusters:
+        for sm in scl:
+          if sm in sys_non_aligned:
+            for km in key_non_aligned:
+              # if not key_used[j] and km.similarity_scores(sm, method='craft') > 0:
+              if km.similarity_scores(sm, method='craft') > 0:
+                if not key_used[km]:
+                  key_used[km] = True
+                  # print(str(km), str(sm))
+                  p_num+=1
+                  sys_mention_key_cluster[sm] = sys_mention_key_cluster[km]
+                  key_mention_sys_cluster[km] = key_mention_sys_cluster[sm]
+                  partial_match_map[sm] = km
+                  partial_match_map[km] = sm
+                break
+    else:
+      similarity = np.zeros((len(key_non_aligned),len(sys_non_aligned)))
+      for i, km in enumerate(key_non_aligned):
+        for j, sm in enumerate(sys_non_aligned):
+          similarity[i,j] = km.similarity_scores(sm,method='craft' if use_CRAFT else 'default')
+      # print(similarity)
+      key_ind, sys_ind = linear_sum_assignment(-similarity)
+      for k, s in zip(key_ind,sys_ind):
+        if similarity[k,s] > 0:
+          p_num+=1
+          key_mention,sys_mention = key_non_aligned[k],sys_non_aligned[s]
+          # print(str(key_mention),str(sys_mention))
+          sys_mention_key_cluster[sys_mention] = sys_mention_key_cluster[key_mention]
+          key_mention_sys_cluster[key_mention] = key_mention_sys_cluster[sys_mention]
+          partial_match_map[sm] = km
+          partial_match_map[km] = sm
+  if print_debug:
+    print('Partially correct identified mentions:',p_num)
+    print('No identified:',len(key_mention_set)-s_num-p_num)
+    print('Invented:',len(sys_mention_set)-s_num-p_num)
+  return sys_mention_key_cluster, key_mention_sys_cluster,partial_match_map
 
 
 def get_all_docs(path):
@@ -259,7 +343,6 @@ def get_all_docs(path):
   if doc_name and doc_lines:
     all_docs[doc_name] = doc_lines
   return all_docs
-
 
 
 

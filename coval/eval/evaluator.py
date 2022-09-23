@@ -4,7 +4,7 @@ https://github.com/clarkkev/deep-coref/blob/master/evaluation.py
 from collections import defaultdict
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from coval.ua import markable
+from coval.ua import markable as ua_markable
 
 
 def f1(p_num, p_den, r_num, r_den, beta=1):
@@ -119,10 +119,10 @@ class Evaluator:
       return {}, {}, {}
 
     if len(key_split_antecedents) == 0:
-      key_split_antecedents.append(markable.get_dummy_split_antecedent())
+      key_split_antecedents.append(ua_markable.get_dummy_split_antecedent())
 
     if len(sys_split_antecedents) == 0:
-      sys_split_antecedents.append(markable.get_dummy_split_antecedent())
+      sys_split_antecedents.append(ua_markable.get_dummy_split_antecedent())
 
     key_clusters = [list(s_ant.split_antecedent_members) for s_ant in key_split_antecedents]
     sys_clusters = [list(s_ant.split_antecedent_members) for s_ant in sys_split_antecedents]
@@ -164,9 +164,9 @@ class Evaluator:
   def __update__(self, key_clusters, sys_clusters,
                  key_mention_sys_cluster, sys_mention_key_cluster,
                  key_split_antecedent_sys_r={},sys_split_antecedent_key_p={},
-                 key_split_antecedent_sys_f={},is_split_alignment=False):
-    if self.metric == ceafe or self.metric == ceafm:
-      pn, pd, rn, rd = self.metric(sys_clusters, key_clusters,key_split_antecedent_sys_f)
+                 key_split_antecedent_sys_f={},is_split_alignment=False,partial_match_map = {}):
+    if self.metric == ceafe or self.metric == ceafm: #partial_match_map is used for ceaf to allow partial match
+      pn, pd, rn, rd = self.metric(sys_clusters, key_clusters,partial_match_map,key_split_antecedent_sys_f)
     elif self.metric == blancc or self.metric == blancn:
       pn, pd, rn, rd = self.metric(sys_clusters, key_clusters, key_mention_sys_cluster, key_split_antecedent_sys_f)
     elif self.metric == lea:
@@ -195,8 +195,13 @@ class Evaluator:
     return pn, pd, rn, rd
 
   def update(self, coref_info):
-    (key_clusters, sys_clusters, key_mention_sys_cluster,
-        sys_mention_key_cluster) = coref_info
+    if len(coref_info) == 5:
+      (key_clusters, sys_clusters, key_mention_sys_cluster,
+       sys_mention_key_cluster,partial_match_map) = coref_info
+    else:
+      (key_clusters, sys_clusters, key_mention_sys_cluster,
+          sys_mention_key_cluster) = coref_info
+      partial_match_map = {}
 
     key_split_antecedent_sys_r, sys_split_antecedent_key_p, key_split_antecedent_sys_f \
       = self.align_split_antecedents(key_clusters, sys_clusters)
@@ -206,7 +211,8 @@ class Evaluator:
                                      sys_mention_key_cluster,
                                      key_split_antecedent_sys_r,
                                      sys_split_antecedent_key_p,
-                                     key_split_antecedent_sys_f)
+                                     key_split_antecedent_sys_f,
+                                     partial_match_map=partial_match_map)
     self.p_num += pn
     self.p_den += pd
     self.r_num += rn
@@ -282,16 +288,16 @@ def evaluate_documents(doc_coref_infos, metric, beta=1, lea_split_antecedent_imp
       return (evaluator.get_recall(), evaluator.get_precision(),
         evaluator.get_f1())
 
+#this method is not used, and it is not up to date
+# def get_document_evaluations(doc_coref_infos, metric, beta=1):
+#   evaluator = Evaluator(metric, beta=beta, keep_aggregated_values=True)
+#   for doc_id in doc_coref_infos:
+#     evaluator.update(doc_coref_infos[doc_id])
+#   return evaluator.get_aggregated_values()
 
-def get_document_evaluations(doc_coref_infos, metric, beta=1):
-  evaluator = Evaluator(metric, beta=beta, keep_aggregated_values=True)
-  for doc_id in doc_coref_infos:
-    evaluator.update(doc_coref_infos[doc_id])
-  return evaluator.get_aggregated_values()
 
-
-def mentions(clusters, mention_to_gold):
-  setofmentions = set(mention for cluster in clusters for mention in cluster)
+def mentions(clusters, mention_to_gold,split_antecedent_to_gold={}):
+  setofmentions = set(split_antecedent_to_gold[mention] if mention in split_antecedent_to_gold else mention for cluster in clusters for mention in cluster)
   correct = setofmentions & set(mention_to_gold.keys())
   return len(correct), len(setofmentions)
 
@@ -318,7 +324,7 @@ def b_cubed(clusters, mention_to_gold, split_antecedent_to_gold={}):
   return num, den
 
 def is_split_antecedent(m):
-  return isinstance(m, markable.Markable) and m.is_split_antecedent
+  return isinstance(m, ua_markable.Markable) and m.is_split_antecedent
 
 def muc(clusters, out_clusters, mention_to_gold, split_antecedent_to_gold={}, count_singletons = False):
   tp, p = 0, 0
@@ -353,10 +359,10 @@ def muc(clusters, out_clusters, mention_to_gold, split_antecedent_to_gold={}, co
   return tp, p
 
 
-def phi4(c1, c2, split_antecedent_to_sys):
-  return 2 * phi3(c1,c2,split_antecedent_to_sys) / float(len(c1) + len(c2))
+def phi4(c1, c2, partial_match_map, split_antecedent_to_sys):
+  return 2 * phi3(c1,c2,partial_match_map,split_antecedent_to_sys) / float(len(c1) + len(c2))
 
-def phi3(c1, c2, split_antecedent_to_sys):
+def phi3(c1, c2, partial_match_map, split_antecedent_to_sys):
   overlap = 0
   for m in c1:
     if is_split_antecedent(m):
@@ -364,27 +370,27 @@ def phi3(c1, c2, split_antecedent_to_sys):
         gold_split_antecedent, matching_score = split_antecedent_to_sys[m]
         if gold_split_antecedent in c2:
           overlap += matching_score
-    elif m in c2:
+    elif m in c2 or (m in partial_match_map and partial_match_map[m] in c2):
       overlap += 1
   return overlap
 
-def ceafe(clusters, gold_clusters,key_split_antecedent_sys_f={}):
+def ceafe(clusters, gold_clusters,partial_match_map = {},key_split_antecedent_sys_f={}):
   clusters = [c for c in clusters]
   scores = np.zeros((len(gold_clusters), len(clusters)))
   for i in range(len(gold_clusters)):
     for j in range(len(clusters)):
-      scores[i, j] = phi4(gold_clusters[i], clusters[j],key_split_antecedent_sys_f)
+      scores[i, j] = phi4(gold_clusters[i], clusters[j],partial_match_map,key_split_antecedent_sys_f)
   row_ind, col_ind = linear_sum_assignment(-scores)
   # print(scores,row_ind,col_ind)
   similarity = scores[row_ind, col_ind].sum()
   return similarity, len(clusters), similarity, len(gold_clusters)
 
-def ceafm(clusters, gold_clusters, key_split_antecedent_sys_f={}):
+def ceafm(clusters, gold_clusters, partial_match_map = {},key_split_antecedent_sys_f={}):
   clusters = [c for c in clusters]
   scores = np.zeros((len(gold_clusters), len(clusters)))
   for i in range(len(gold_clusters)):
     for j in range(len(clusters)):
-      scores[i, j] = phi3(gold_clusters[i], clusters[j], key_split_antecedent_sys_f)
+      scores[i, j] = phi3(gold_clusters[i], clusters[j], partial_match_map,key_split_antecedent_sys_f)
   row_ind, col_ind = linear_sum_assignment(-scores)
   similarity = scores[row_ind, col_ind].sum()
 
