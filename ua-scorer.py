@@ -7,7 +7,7 @@ __author__ = 'ns-moosavi; juntaoy'
 
 
 def main():
-  metric_dict = {
+  metric_dict = {'mention':evaluator.mentions,
       'lea': evaluator.lea, 'muc': evaluator.muc,
       'bcub': evaluator.b_cubed, 'ceafe': evaluator.ceafe,
       'ceafm':evaluator.ceafm, 'blanc':[evaluator.blancc,evaluator.blancn]}
@@ -28,6 +28,12 @@ def main():
     use_MIN = True
   else:
     use_MIN = False
+
+  if 'CRAFT' in sys.argv or 'craft' in sys.argv:
+    use_CRAFT = True
+    use_MIN = True
+  else:
+    use_CRAFT = False
 
   if 'keep_non_referring' in sys.argv or 'keep_non_referrings' in sys.argv:
     keep_non_referring = True
@@ -58,6 +64,19 @@ def main():
   else:
     evaluate_discourse_deixis = False
 
+  #if mentions have boundary crossing like (a (b a) b)
+  # you need add the markable ID at the closing
+  #e.g. markable_b)
+  if 'allow_boundary_crossing' in sys.argv or 'allow_boundary_cross':
+    allow_boundary_crossing = True
+  else:
+    allow_boundary_crossing = False
+
+  if 'print_debug' in sys.argv:
+    print_debug = True
+  else:
+    print_debug = False
+
   if 'all' in sys.argv:
     metrics = [(k, metric_dict[k]) for k in metric_dict]
   else:
@@ -86,19 +105,19 @@ def main():
     if keep_bridging:
       msg+=', bridging relations'
 
-
-  print('The scorer is evaluating ', msg,
-      (" using the minimum span evaluation setting " if use_MIN else ""))
+  msg += " using CRAFT partial matching evaluation setting " if use_CRAFT else \
+  (" using the minimum span evaluation setting " if use_MIN else "")
+  print('The scorer is evaluating ', msg)
 
   evaluate(key_file, sys_file, metrics, keep_singletons,keep_split_antecedent,keep_bridging,
-      keep_non_referring,only_split_antecedent,evaluate_discourse_deixis, use_MIN)
+      keep_non_referring,only_split_antecedent,evaluate_discourse_deixis, use_MIN,use_CRAFT,allow_boundary_crossing,print_debug)
 
 
 def evaluate(key_file, sys_file, metrics, keep_singletons, keep_split_antecedent, keep_bridging,
-    keep_non_referring, only_split_antecedent,evaluate_discourse_deixis, use_MIN):
+    keep_non_referring, only_split_antecedent,evaluate_discourse_deixis, use_MIN,use_CRAFT,allow_boundary_crossing,print_debug=False):
 
   doc_coref_infos, doc_non_referring_infos, doc_bridging_infos = reader.get_coref_infos(key_file, sys_file, keep_singletons,
-      keep_split_antecedent, keep_bridging, keep_non_referring,evaluate_discourse_deixis,use_MIN)
+      keep_split_antecedent, keep_bridging, keep_non_referring,evaluate_discourse_deixis,use_MIN,use_CRAFT,allow_boundary_crossing,print_debug)
 
   conll = 0
   conll_subparts_num = 0
