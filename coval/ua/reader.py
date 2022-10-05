@@ -316,8 +316,8 @@ def get_markable_assignments(key_clusters,sys_clusters,use_MIN,use_CRAFT,print_d
           # print(str(key_mention),str(sys_mention))
           sys_mention_key_cluster[sys_mention] = sys_mention_key_cluster[key_mention]
           key_mention_sys_cluster[key_mention] = key_mention_sys_cluster[sys_mention]
-          partial_match_map[sm] = km
-          partial_match_map[km] = sm
+          partial_match_map[sys_mention] = key_mention
+          partial_match_map[key_mention] = sys_mention
   if print_debug:
     print('Partially correct identified mentions:',p_num)
     print('No identified:',len(key_mention_set)-s_num-p_num)
