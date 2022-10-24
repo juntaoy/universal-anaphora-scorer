@@ -1,0 +1,168 @@
+###############################################################################################################
+############# Tests on partial matching of overlapping (embedded or crossing) key mentions ####################
+###############################################################################################################
+
+======= TC-OLMA.key: two embedded key mentions, head of the outer mention does not lie within the inner mention =======
+
+TC-OLMA-1 - perfect matching to both embedded keys:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2-13)          (d:48) } {(b:2-5)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+Expected: Mention=1 [recall=23/23=1, prec=23/23=1]
+
+TC-OLMA-2 - matching only heads of both embedded keys:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:10)            (d:48) } {(b:3)        (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+Expected: Mention=? [recall=9/23, prec=9/9=1]
+
+TC-OLMA-3 - matching both embedded keys with crossing mentions:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-11)          (d:48) } {(b:3-5)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+Expected: Mention=? [recall=18/23, prec=18/18=1]
+
+TC-OLMA-4 - matching only the outer embedded key with two non-crossing mentions:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:9-11)          (d:48) } {(b:4-5)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=17/24 [recall=17/24, prec=17/24]
+Expected: MUC=3/4 [recall=3/4, prec=3/4]
+Expected: Mention=? [recall=12/23, prec=12/12=1]
+
+TC-OLMA-5 - matching only the outer embedded key with one mention:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-11)          (d:48) } {             (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=34/41 [recall=17/24, prec=5/5]
+Expected: MUC=6/7 [recall=3/4, prec=3/3=1]
+Expected: Mention=? [recall=15/23, prec=15/15=1]
+
+TC-OLMA-6 - matching none of the embedded key mentions with one mention covering parts of both mentions:
+Key/Ref: {(a:2-9,10*,11-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-5)           (d:48) } {             (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=77/139 [recall=11/24, prec=7/10]
+Expected: MUC=4/7 [recall=1/2, prec=2/3]
+Expected: Mention=? [recall=9/23, prec=9/9=1]
+
+======= TC-OLMAA.key: two embedded key mentions with different boundaries, head of the outer mention does not lie within the inner mention =======
+
+TC-OLMAA-1 - perfect matching to both embedded keys:
+Key/Ref: {(a:2*,3) (b:12*) (c:30*,31-32) (f:65*)} {(d:48*) (e:62-63,64*,65-70)}
+Key/Ref: {(a:2-3)  (b:12)  (c:30-32)     (f:65)}  {(d:48)  (e:62-70)          }
+Expected: Mention=1 [recall=17/17=1, prec=17/17=1]
+
+TC-OLMAA-2 - matching only heads of both embedded keys + extra sys mention:
+Key/Ref: {(a:2*,3) (b:12*) (c:30*,31-32) (f:65*)}          {(d:48*) (e:62-63,64*,65-70)}
+Key/Ref: {(a:2-3)  (b:12)  (c:30-32)     (f:65)  (xf:71)}  {(d:48)  (e:64)             }
+Expected: Mention=? [recall=9/17, prec=9/10]
+
+======= TC-OLMB.key: two embedded key mentions, both heads lie within both mentions, but are not the same =======
+
+TC-OLMB-1 - perfect matching to both embedded keys:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2-13)    (d:48) } {(b:2-5)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+Expected: Mention=1 [recall=23/23=1, prec=23/23=1]
+
+TC-OLMB-2 - matching only heads of both embedded keys:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2)       (d:48) } {(b:3)        (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+Expected: Mention=? [recall=9/23, prec=9/9=1]
+
+TC-OLMB-3 - there is a perfect matching for both embedded keys, which cannot be found using the criteria for partial matching, though:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2-4)     (d:48) } {(b:3-5)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=15/19 [recall=3/4, prec=5/6]
+Expected: MUC=3/4 [recall=3/4, prec=3/4]
+Expected: Mention=? [recall=13/23, prec=13/13=1]
+
+TC-OLMB-4 - matching only the outer embedded key with two non-crossing mentions:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2)       (d:48) } {(b:3-7)      (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=17/24 [recall=17/24, prec=17/24]
+Expected: MUC=3/4 [recall=3/4, prec=3/4]
+Expected: Mention=? [recall=13/23, prec=13/13]
+
+TC-OLMB-5 - matching only the outer embedded key with one mention:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2-11)    (d:48) } {             (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=34/41 [recall=17/24, prec=5/5]
+Expected: MUC=6/7 [recall=3/4, prec=3/3=1]
+Expected: Mention=? [recall=17/23, prec=17/17]
+
+TC-OLMB-6 - matching none of the embedded key mentions with one mention covering parts of both mentions:
+Key/Ref: {(a:2*,3-13) (d:48*)} {(b:2,3*,4-5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-5)     (d:48) } {             (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=77/139 [recall=11/24, prec=7/10]
+Expected: MUC=4/7 [recall=1/2, prec=2/3]
+Expected: Mention=? [recall=17/23, prec=17/17]
+
+======= TC-OLMC.key: two embedded key mentions with the same heads =======
+
+TC-OLMC-1 - perfect matching to both embedded keys:
+Key/Ref: {(a:2-3,4*,5-13) (d:48*)} {(b:2-3,4*,5) (c:30*,32-33) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:2-13)        (d:48) } {(b:2-5)      (c:30-33)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+
+TC-OLMC-2 - matching head of one of the embedded keys with a mention belonging to another cluster
+Key/Ref: {(a:2-3,4*,5-13) (d:48*)} {(b:2-3,4*,5) (c:30*,32-33) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4)           (d:48) } {             (c:30-33)     (e:63-64)  (f:67) }
+Expected: BCUB=24/31 [recall=3/4, prec=4/5]
+Expected: MUC=12/17 [recall=3/4, prec=2/3]
+
+TC-OLMC-3 - matching head of the outer embedded key with a single mention
+Key/Ref: {(a:2-3,4*,5-13) (d:48*)} {(b:2-3,4*,5) (c:30*,32-33) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-6)         (d:48) } {             (c:30-33)     (e:63-64)  (f:67) }
+Expected: BCUB=34/41 [recall=17/24, prec=5/5]
+Expected: MUC=6/7 [recall=3/4, prec=3/3=1]
+
+TC-OLMC-4 - matching both embedded keys with two crossing mentions; the outer one's counterpart is picked because it covers greater part of the mention
+Key/Ref: {(a:2-3,4*,5-13) (d:48*)} {(b:2-3,4*,5) (c:30*,32-33) (e:63*,64) (f:67*)}
+Rsp/Sys: {(a:4-9)         (d:48) } {(b:2-4)      (c:30-33)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=6/6=1]
+Expected: MUC=1 [recall=4/4=1, prec=4/4=1]
+
+TC-OLMC-5 - perfectly matching both embedded keys by generating two extra matching mentions - UNWANTED BEHAVIOUR
+Key/Ref: {          (a:2-3,4*,5-13) (d:48*)} {         (b:2-3,4*,5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(xa:2-10) (a:4-9)         (d:48) } {(xb:3-5) (b:4)        (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=1 [recall=6/6=1, prec=8/8=1]
+Expected: MUC=1 [recall=4/4=1, prec=6/6=1]
+Expected: CEAFe=38/45 [recall=38/45, prec=38/45]
+Expected: CEAFm=6/7 [recall=6/6=1, prec=6/8=3/4]
+Expected: Mention=? [recall=19/23, prec=19/26]
+
+TC-OLMC-6 - matching both embedded keys by generating two extra non-matching mentions
+Key/Ref: {          (a:2-3,4*,5-13) (d:48*)} {         (b:2-3,4*,5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(xa:1-10) (a:4-9)         (d:48) } {(xb:3-6) (b:4)        (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=142/191 [recall=6/6=1, prec=71/120]
+Expected: MUC=4/5 [recall=4/4=1, prec=4/6=2/3]
+Expected: CEAFe=38/45 [recall=38/45, prec=38/45]
+Expected: CEAFm=6/7 [recall=6/6=1, prec=6/8=3/4]
+Expected: Mention=? [recall=19/23, prec=19/28]
+
+TC-OLMC-7 - matching both embedded keys by generating two extra matching and two extra non-matching mentions
+Key/Ref: {                    (a:2-3,4*,5-13) (d:48*)} {                  (b:2-3,4*,5) (c:30*,31-32) (e:63*,64) (f:67*)}
+Rsp/Sys: {(xa:1-10) (ya:2-10) (a:4-9)         (d:48) } {(xb:3-6) (yb:3-5) (b:4)        (c:30-32)     (e:63-64)  (f:67) }
+Expected: BCUB=158/199 [recall=6/6=1, prec=79/120]
+Expected: MUC=6/7 [recall=4/4=1, prec=6/8=3/4]
+Expected: CEAFe=11/15 [recall=11/15, prec=11/15]
+Expected: CEAFm=3/4 [recall=6/6=1, prec=6/10=3/5]
+Expected: Mention=? [recall=20/23, prec=20/40]
+
+======= TC-OLMD.key: two crossing key mentions with both heads in non-overlapping parts =======
+TODO: add tests
+
+======= TC-OLME.key: two crossing key mentions with one head in a non-overlapping part and one in the intersection =======
+TODO: add tests
+
+======= TC-OLMF.key: two crossing key mentions with both heads in the intersection, but not the same =======
+TODO: add tests
+
+======= TC-OLMG.key: two crossing key mentions with the same heads =======
+TODO: add tests

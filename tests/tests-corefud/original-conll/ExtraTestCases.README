@@ -1,0 +1,10 @@
+#########################################################################
+######################## Extra basic tests ##############################
+#########################################################################
+
+======= TC-O.key: tests from (Cai and Strube, 2011), key = {a b c} =======
+
+TC-O-1 - test from Section 2.2.2, computing basic BCUB
+Key/Ref: {a b c}
+Rsp/Sys: {a b d} {i j}
+Expected: BCUB=1/3 [recall=4/9, prec=4/15]
