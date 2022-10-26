@@ -20,13 +20,13 @@ def compatibility_check(args):
     error_msg = ''
     format = args['format']
     format_specific_tags = {
-        "ua":['keep_split_antecedents', 'only_split_antecedent', 'evaluate_discourse_deixis',
-                   'allow_boundary_crossing'],
-        "conll":['np_only','remove_nested_mentions']
+        "ua": ['keep_split_antecedents', 'only_split_antecedent', 'evaluate_discourse_deixis',
+               'allow_boundary_crossing'],
+        "conll": ['np_only', 'remove_nested_mentions']
     }
     format_specific_metrics = {
-        "ua":['non-referring', 'bridging'],
-        "corefud":["zero"]
+        "ua": ['non-referring', 'bridging'],
+        "corefud": ["zero"]
     }
 
     for target_format in format_specific_tags:
@@ -44,8 +44,8 @@ def compatibility_check(args):
                 target_format
             )
 
-    if args['partial_match'] and args['partial_match_method'] == 'craft' and format!='ua':
-        error_msg+= 'The craft partial match method is only available for ua format.\n'
+    if args['partial_match'] and args['partial_match_method'] == 'craft' and format != 'ua':
+        error_msg += 'The craft partial match method is only available for ua format.\n'
 
     if error_msg:
         raise UnSuporttedFunctionError(error_msg)
@@ -132,9 +132,10 @@ def main():
                            help='report F1 scores on split antecedent alignments')
     argparser.add_argument('--allow-boundary-crossing', action='store_true', default=False,
                            help='to allow partial boundary overlapping')
-    argparser.add_argument('--np-only',action='store_true',default=False,help='evaluate only NP metnions')
-    argparser.add_argument('--remove-nested-mentions',action='store_true',default=False,help='evaluate only flat metnions')
-    argparser.add_argument("--shared-task",
+    argparser.add_argument('--np-only', action='store_true', default=False, help='evaluate only NP metnions')
+    argparser.add_argument('--remove-nested-mentions', action='store_true', default=False,
+                           help='evaluate only flat metnions')
+    argparser.add_argument('-t','--shared-task',
                            choices=['conll12', 'crac18', 'craft19', 'crac22', 'codicrac22ar', 'codicrac22br',
                                     'codicrac22dd'],
                            help='use specific shared task settings, this will overridde all other settings, for more detail please check shared task website')
@@ -159,7 +160,12 @@ def main():
         args['sys_file'] = sys_file
     else:
         if 'all' in args['metrics']:
-            args['metrics'] = metric_dict.keys()
+            if args['format'] == 'conll':
+                args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero', 'non-referring', 'bridging']]
+            elif args['format'] == 'corefud':
+                args['metrics'] = [m for m in metric_dict.keys() if m not in ['non-referring', 'bridging']]
+            else:
+                args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero']]
         elif 'conll' in args['metrics']:
             args['metrics'] = ['muc', 'bcub', 'ceafe']
 
