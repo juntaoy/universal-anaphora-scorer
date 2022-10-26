@@ -118,7 +118,7 @@ Apart from metrics and partial mention matching, the scorer has the following ad
 * `--remove-nested-mentions`: (only for `conll` format) evaluate only non-nested mentions
 
 
-##Evaluation Modes
+## Evaluation Modes
 As a result, if you only run `python ua-scorer.py key system` without any additional option, the evaluation is performed by reporting MUC, B-cubed, CEAFe and CoNLL F1 scores on coreference clusters using UA-exploded format and exact mention matching but without considering split-antecedent, singleton, non-referring, bridging or discourse-deixis markables.
 
 Overall, the above options enable the following evaluation modes: 
