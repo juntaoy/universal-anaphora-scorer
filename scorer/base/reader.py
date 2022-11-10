@@ -60,22 +60,20 @@ class Reader:
         return NotImplemented
 
 
-    def get_mention_cluster_alignment(self,clusters, other_mention_set):
+    def get_mention_cluster_alignment(self, clusters, other_mention_set):
         mention_cluster_ids = {}
         mention_non_aligned = []
         for cluster_id, cluster in enumerate(clusters):
             for m in cluster:
                 if m in mention_cluster_ids:
-                    logging.warning(
-                        "Mention span {:s} has been already indexed with cluster_id = {:d}. New cluster_id = {:d}".format(
-                            str(m), mention_cluster_ids[m], cluster_id))
+                    logging.warning(f"Mention span {str(m)} has been already indexed with cluster_id = {mention_cluster_ids[m]}. New cluster_id = {cluster_id}")
                 mention_cluster_ids[m] = cluster_id
                 if not m.is_split_antecedent and m not in other_mention_set:
                     mention_non_aligned.append(m)
         return mention_cluster_ids, mention_non_aligned
 
 
-    def get_mention_assignments(self,key_clusters, sys_clusters):
+    def get_mention_assignments(self, key_clusters, sys_clusters):
         key_mention_set = set([m for cl in key_clusters for m in cl])
         sys_mention_set = set([m for cl in sys_clusters for m in cl])
         s_num = len(key_mention_set & sys_mention_set)
@@ -87,8 +85,8 @@ class Reader:
 
         #we no longer add partial matching to sys_mention_key_cluster or key_mention_sys_cluster the partial matching
         #is not handled by partial_match_dict alone.
-        sys_mention_key_cluster, key_non_aligned = self.get_mention_cluster_alignment(key_clusters,sys_mention_set)
-        key_mention_sys_cluster, sys_non_aligned = self.get_mention_cluster_alignment(sys_clusters,key_mention_set)
+        sys_mention_key_cluster, key_non_aligned = self.get_mention_cluster_alignment(key_clusters, sys_mention_set)
+        key_mention_sys_cluster, sys_non_aligned = self.get_mention_cluster_alignment(sys_clusters, key_mention_set)
 
         use_CRAFT = self.partial_match_method == 'craft'
         p_num = 0
