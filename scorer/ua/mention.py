@@ -20,16 +20,16 @@ class UAMention(Mention):
         self._end_list = end
         self._min = MIN
 
-    # CRAFT (with craft tag) same as the CRAFT 2019 CR task that use the first key span as the MIN and any
-    #             response that overlapping with the MIN (start>=MIN[0] and end <=MIN[1]) will receive a
+    # CRAFT (with craft tag) same as the CRAFT 2019 CR task that uses the first key span as the MIN and any
+    #             response that is covered by the MIN (start>=MIN[0] and end <=MIN[1]) will receive a
     #             non-zero similarity score otherwise a zero will be returned.
     def _craft_partial_match_score(self, other):
         if self._minset:
             for s, e in zip(other._start_list, other._end_list):
                 if s >= self._min[0] and e <= self._min[1]:
-                    return len(self._wordsset & other._wordsset) * 1.0 / len(self._wordsset)
+                    return len(self._wordsset & other._wordsset) / len(self._wordsset)
         elif other._minset:
             for s, e in zip(self._start_list, self._end_list):
                 if s >= other._min[0] and e <= other._min[1]:
-                    return len(self._wordsset & other._wordsset) * 1.0 / len(other._wordsset)
-        return 0.0
+                    return len(self._wordsset & other._wordsset) / len(other._wordsset)
+        return 0
