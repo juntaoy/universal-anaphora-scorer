@@ -233,7 +233,7 @@ def main():
                                                                 ' with {:s} method'.format(
                                                                     args['partial_match_method']) if args[
                                                                     'partial_match'] else '')
-    msg += "The following metrics will be evaluated: {:s}\n".format(", ".join([name for name in args['metrics']]))
+    msg += "The following metrics will be evaluated: {:s}\n".format(", ".join([name for name, _ in args['metrics']]))
     print(msg)
 
     evaluate(args)
