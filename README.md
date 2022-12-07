@@ -107,8 +107,16 @@ with partial mention matching using CRAFT method:
 
 `python ua-scorer.py key system -p --partial-match-method craft`
 
+## Zeros
+The scorer has the option to allow include zeros in the evaluation, the option is supported by both the `ua` and `corefud` formats. To include zeros in your evaluation, add `-z` or `--keep-zeros` options to the input arguments:
+
+`python ua-scorer.py key system -z`
+
+Currently, the scorer aligns the zeros in the key and system using their positions (`linear`), assuming there is a consistent annotation guideline on where the zeros should be positioned. A linguistically motivated method (`dependent`) based on zero's dependence is under development for the `corefud` format to use parse trees to align the zeros in a different way. The `--zero-match-metod` option is used to specify the method for the alignments, by default it uses `linear` method.
+
+
 ## Other Options
-Apart from metrics and partial mention matching, the scorer has the following additional options:
+Apart from metrics, partial mention matching, zeros, the scorer has the following additional options:
 * `-s|--keep-singletons`:  if this option is included in the command, all singletons in the key and system files will be included in the evaluation.
 * `-l|--keep-split-antecedents`: (only for `ua` format) if this option is included in the command, all split-antecedent in the key and system files will be included in the evaluation.
 * `-d|--evaluate-discourse-deixis`: (only for `ua` format) if this option is included in the command the scorer will only evaluate discourse deixis using the metrics specified.
@@ -118,7 +126,7 @@ Apart from metrics and partial mention matching, the scorer has the following ad
 * `--remove-nested-mentions`: (only for `conll` format) evaluate only non-nested mentions
 
 
-##Evaluation Modes
+## Evaluation Modes
 As a result, if you only run `python ua-scorer.py key system` without any additional option, the evaluation is performed by reporting MUC, B-cubed, CEAFe and CoNLL F1 scores on coreference clusters using UA-exploded format and exact mention matching but without considering split-antecedent, singleton, non-referring, bridging or discourse-deixis markables.
 
 Overall, the above options enable the following evaluation modes: 
@@ -154,7 +162,7 @@ You can refer to Pradhan et al [2014] and Moosavi and Strube [2016] for more det
 ### Evaluating coreference relatons, singletons and zeros using partial mention matching (e.g. CRAC 2022)
 This evaluation mode is used by the CRAC 2022 shared task, it includes coreference relations, singletons, zeros (with gold zeros provided) but not split-antecedents. It reports MUC, B-cubed, CEAFe, CoNLL F1, mention overlapping scores and anaphora level scores for zero. Its corresponding command is:  
 
-`python ua-scorer.py key system -f corefud -s -m muc bcub ceafe mention zero -p`
+`python ua-scorer.py key system -f corefud -sz -m muc bcub ceafe mention zero -p`
 
 or using the `[-t|--shared-task]` shortcuts:
 

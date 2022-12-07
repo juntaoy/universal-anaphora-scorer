@@ -28,17 +28,26 @@ class UAReader(Reader):
         markables_MIN = {}
         markables_coref_tag = {}
         markables_split = {}  # set_id: [markable_id_1, markable_id_2 ...]
+        markables_is_zero={}
         bridging_antecedents = {}
         all_words = []
         stack = []
-        for word_index, line in enumerate(doc_lines):
+
+
+        word_index = 0
+        # zero_index is used for distinguish multiple zeros in the same location
+        # zero is index with decimals in string e.g. '5.0', '5.1'
+        zero_index = 0
+        for line in doc_lines:
             columns = line.split()
-            all_words.append(columns[word_column])
+            is_zero = '.' in columns[0]
 
             if columns[markable_column] != '_':
                 markable_annotations = columns[markable_column].split("(")
                 if markable_annotations[0]:
                     # the close bracket
+                    if is_zero:
+                        raise self.CorefFormatError('Zeros should not be used as start/end of the standard mentions. {}'.format(line))
                     if self.allow_boundary_crossing:
                         for markable_id in markable_annotations[0].split(")"):
                             if len(markable_id) > 0:
@@ -53,6 +62,9 @@ class UAReader(Reader):
                         single_word = True
                         markable_annotation = markable_annotation[:-1]
                     else:
+                        if is_zero:
+                            raise self.CorefFormatError(
+                                'Zeros should not be used as start/end of the standard mentions. {}'.format(line))
                         single_word = False
                     markable_info = {p[:p.find('=')]: p[p.find('=') + 1:] for p in markable_annotation.split('|')}
                     markable_id = markable_info['MarkableID']
@@ -61,12 +73,17 @@ class UAReader(Reader):
                     if markable_id not in markables_start:
                         markables_start[markable_id] = []
                         markables_end[markable_id] = []
+                        markables_is_zero[markable_id] = is_zero
 
-                    markables_start[markable_id].append(word_index)
-                    if single_word:
-                        markables_end[markable_id].append(word_index)
-                    elif not self.allow_boundary_crossing:
-                        stack.append(markable_id)
+                    if is_zero:
+                        markables_start[markable_id].append('{}.{}'.format(word_index,zero_index))
+                        markables_end[markable_id].append('{}.{}'.format(word_index,zero_index))
+                    else:
+                        markables_start[markable_id].append(word_index)
+                        if single_word:
+                            markables_end[markable_id].append(word_index)
+                        elif not self.allow_boundary_crossing:
+                            stack.append(markable_id)
 
                     if markable_id not in markables_MIN:
                         markables_MIN[markable_id] = None
@@ -99,6 +116,13 @@ class UAReader(Reader):
                     bridging_info = {p[:p.find('=')]: p[p.find('=') + 1:] for p in bridging_annotation.split('|')}
                     bridging_antecedents[bridging_info['MarkableID']] = bridging_info['MentionAnchor']
 
+            if is_zero:
+                zero_index+=1
+            else:
+                all_words.append(columns[word_column])
+                zero_index=0
+                word_index+=1
+
         clusters = {}
         id2markable = {}
         for markable_id in markables_cluster:
@@ -108,6 +132,7 @@ class UAReader(Reader):
                 [markables_start[markable_id][0], markables_end[markable_id][0]] if use_CRAFT_MIN else markables_MIN[
                     markable_id],
                 markables_coref_tag[markable_id],
+                is_zero = markables_is_zero[markable_id]
             )
             id2markable[markable_id] = m
             if markables_cluster[markable_id] not in clusters:
@@ -129,6 +154,7 @@ class UAReader(Reader):
     def process_clusters(self, clusters):
         removed_non_referring = 0
         removed_singletons = 0
+        removed_zeros = 0
         processed_clusters = []
         processed_non_referrings = []
 
@@ -168,6 +194,11 @@ class UAReader(Reader):
                 removed_singletons += 1
                 continue
 
+            if not self.keep_zeros:
+                o_size = len(cluster)
+                cluster = [m for m in cluster if not m.is_zero]
+                removed_zeros += o_size - len(cluster)
+
             processed_clusters.append(cluster)
 
         if self.keep_split_antecedents:
@@ -192,18 +223,15 @@ class UAReader(Reader):
             merged_clusters = processed_clusters
 
         return (merged_clusters, processed_non_referrings,
-                removed_non_referring, removed_singletons)
+                removed_non_referring, removed_singletons, removed_zeros)
 
-    def get_coref_infos(self, key_file, sys_file):
+    def get_coref_infos(self, key_file, sys_file,unit_test=False):
         key_docs = self.get_all_docs(key_file)
         sys_docs = self.get_all_docs(sys_file)
 
-        for doc in key_docs:
+        self.check_data_alignment(key_docs,sys_docs,unit_test=unit_test)
 
-            if doc not in sys_docs:
-                logging.warning('The document ', doc,
-                                ' does not exist in the system output.')
-                continue
+        for doc in key_docs:
             markable_column = 12 if self.evaluate_discourse_deixis else 10
             key_clusters, key_bridging_pairs = self.get_doc_markables(doc, key_docs[doc],
                                                                       markable_column=markable_column)
@@ -211,9 +239,9 @@ class UAReader(Reader):
                                                                       markable_column=markable_column)
 
             (key_clusters, key_non_referrings, key_removed_non_referring,
-             key_removed_singletons) = self.process_clusters(key_clusters)
+             key_removed_singletons,key_removed_zeros) = self.process_clusters(key_clusters)
             (sys_clusters, sys_non_referrings, sys_removed_non_referring,
-             sys_removed_singletons) = self.process_clusters(sys_clusters)
+             sys_removed_singletons,sys_removed_zeros) = self.process_clusters(sys_clusters)
 
             logging.debug(doc)
 
@@ -239,6 +267,11 @@ class UAReader(Reader):
                               'the key and system files, respectively.'
                               % (key_removed_singletons, sys_removed_singletons))
 
+            if not self.keep_zeros:
+                logging.debug('%s and %s zeros are removed from the evaluations of '
+                              'the key and system files, respectively.'
+                              % (key_removed_zeros, sys_removed_zeros))
+
     def get_all_docs(self, path):
         all_docs = {}
         doc_lines = []
@@ -257,3 +290,27 @@ class UAReader(Reader):
         if doc_name and doc_lines:
             all_docs[doc_name] = doc_lines
         return all_docs
+
+    def get_doc_tokens_without_zeros(self, doc,word_column=1):
+        tokens = []
+        for line in doc:
+            columns = line.split()
+            if '.' not in columns[0]:
+                tokens.append(columns[word_column])
+        return tokens
+
+    def check_data_alignment(self, key_docs, sys_docs, word_column=1,unit_test=False):
+        if len(key_docs.keys()) != len(sys_docs.keys()) or \
+            len(key_docs.keys() - sys_docs.keys()) > 0 or \
+            len(sys_docs.keys() - key_docs.keys()) > 0:
+            raise self.DataAlignError(key_docs.keys() - sys_docs.keys(),sys_docs.keys() - key_docs.keys(),"Documents","doc missing in sys","doc inserting in sys")
+
+        for doc in key_docs.keys():
+            key_tokens = self.get_doc_tokens_without_zeros(key_docs[doc],word_column)
+            sys_tokens = self.get_doc_tokens_without_zeros(sys_docs[doc],word_column)
+            if len(key_tokens) != len(sys_tokens):
+                raise self.DataAlignError(len(key_tokens),len(sys_tokens),"Number of tokens (excluding zeros)")
+            if not unit_test: #for unit_test we do not check the actual tokens, as they may not the same
+                for i, (kt, st) in enumerate(zip(key_tokens,sys_tokens)):
+                    if kt != st:
+                        raise self.DataAlignError(kt,st,"Word {:d}".format(i+1))

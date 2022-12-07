@@ -23,7 +23,9 @@ class CorefUDReader(Reader):
                 raise self.DataAlignError(tree1, tree2, "Newdoc labels")
             if tree1.sent_id != tree2.sent_id:
                 raise self.DataAlignError(tree1, tree2, "Sent IDs")
-            data12_nodes = zip(tree1.descendants_and_empty, tree2.descendants_and_empty)
+            # data12_nodes = zip(tree1.descendants_and_empty, tree2.descendants_and_empty)
+            # The new version allow zeros to be positioned differently then the key.
+            data12_nodes = zip(tree1.descendants, tree2.descendants)
             for node1, node2 in data12_nodes:
                 if node1.form != node2.form:
                     raise self.DataAlignError(node1, node2, "Words")
@@ -77,13 +79,18 @@ class CorefUDReader(Reader):
 
     def process_clusters(self, clusters):
         removed_singletons = 0
+        removed_zeros = 0
         processed_clusters = []
         for cluster in clusters:
             if not self.keep_singletons and len(cluster) == 1:
                 removed_singletons += 1
                 continue
+            if not self.keep_zeros:
+                o_size = len(cluster)
+                cluster = [m for m in cluster if not m.is_zero]
+                removed_zeros+= o_size - len(cluster)
             processed_clusters.append(cluster)
-        return processed_clusters, removed_singletons
+        return processed_clusters, removed_singletons, removed_zeros
 
     def get_coref_infos(self, key_file, sys_file):
         # loading the documents
@@ -104,8 +111,8 @@ class CorefUDReader(Reader):
             key_clusters = self.transform_clusters_for_eval(key_doc_clusters[docname], not self.partial_match)
             sys_clusters = self.transform_clusters_for_eval(sys_doc_clusters[docname], True)
 
-            key_clusters, key_removed_singletons = self.process_clusters(key_clusters)
-            sys_clusters, sys_removed_singletons = self.process_clusters(sys_clusters)
+            key_clusters, key_removed_singletons, key_removed_zeros = self.process_clusters(key_clusters)
+            sys_clusters, sys_removed_singletons, sys_removed_zeros = self.process_clusters(sys_clusters)
 
             key_mention_to_cluster, sys_mention_to_cluster, partial_match_dict = self.get_mention_assignments(
                 key_clusters, sys_clusters)
@@ -118,3 +125,7 @@ class CorefUDReader(Reader):
             if not self.keep_singletons:
                 logging.debug(
                     "Singletons removed: key={:d}, sys={:d}".format(key_removed_singletons, sys_removed_singletons))
+
+            if not self.keep_zeros:
+                logging.debug(
+                    "Zeros removed: key={:d}, sys={:d}".format(key_removed_zeros, sys_removed_zeros))

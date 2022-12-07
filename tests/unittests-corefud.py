@@ -8,14 +8,15 @@ from scorer.eval.evaluator import muc, b_cubed, ceafe, lea, ceafm, blancc, blanc
 TOL = 1e-4
 
 
-def read(key, response, exact_match=False):
+def read(key, response, exact_match=False,keep_zeros=False):
   args = {
     "format": 'corefud',
     "keep_singletons": True,
-    "partial_match":not exact_match
+    "partial_match":not exact_match,
+    "keep_zeros":keep_zeros
   }
   reader = CorefUDReader(**args)
-  folder = 'partial-match-corefud' if '/' in key else 'original-conll'
+  folder = 'partial-match-corefud' if '/' in key else ('zeros' if key.startswith('TC-Z') else 'original-conll')
   reader.get_coref_infos('tests-corefud/%s/%s' % (folder,key), 'tests-corefud/%s/%s' % (folder, response))
   return reader.doc_coref_infos
 
@@ -560,3 +561,132 @@ def test_OLMC4():
 #   assert evaluate(doc, ceafm) == approx([1, 3/5, 3/4], abs=TOL)
 #   assert evaluate(doc, mention_overlap) == (20/23, 20/40, 2*20/23*20/40/(20/40+20/23))
 
+#############################################
+#                                           #
+#    Zeros linear Match Test Cases      #
+#                                           #
+#############################################
+
+
+def test_ZA1():
+  doc = read('TC-ZA.key', 'TC-ZA-1.response',keep_zeros=True)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZA1_exlcude_zeros():
+  doc = read('TC-ZA.key', 'TC-ZA-1.response',keep_zeros=False)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZA2():
+  doc = read('TC-ZA.key', 'TC-ZA-2.response',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([1 / 3, 1 / 1, 1 / 2])
+  assert evaluate(doc, b_cubed) == approx([(7 / 3) / 6, 3 / 3, 14 / 25])
+  assert evaluate(doc, ceafe) == approx([0.6, 0.9, 0.72])
+  assert evaluate(doc, ceafm) == approx([0.5, 1, 0.66667], abs=TOL)
+  assert evaluate(doc, lea) == approx([(1 + 3 * (1 / 3)) / 6, 1, 0.5])
+  assert evaluate(doc, [blancc,blancn]) == approx([0.21591, 1, 0.35385], abs=TOL)
+
+def test_ZA3():
+  doc = read('TC-ZA.key', 'TC-ZA-3.response',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([3 / 3, 3 / 5, 0.75])
+  assert evaluate(doc,
+      b_cubed) == approx([6 / 6, (4 + 7 / 12) / 9, 110 / 163])
+  assert evaluate(doc, ceafe) == approx([0.88571, 0.66429, 0.75918], abs=TOL)
+  assert evaluate(doc, lea) == approx([
+      1, (1 + 3 * (1 / 3) + 4 * (3 / 6)) / 9,
+      2 * (1 + 3 * (1 / 3) + 4
+        * (3 / 6)) / 9 / (1 + (1 + 3 * (1 / 3) + 4 * (3 / 6)) / 9)
+  ])
+  assert evaluate(doc, ceafm) == approx([1, 0.66667, 0.8], abs=TOL)
+  assert evaluate(doc, [blancc, blancn]) == approx([1, 0.42593, 0.59717], abs=TOL)
+
+def test_ZA4():
+  doc = read('TC-ZA.key', 'TC-ZA-4.response',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([1 / 3, 1 / 3, 1 / 3])
+  assert evaluate(doc, b_cubed) == approx([
+      (3 + 1 / 3) / 6, (1 + 4 / 3 + 1 / 2) / 7,
+      2 * (5 / 9) * (17 / 42) / ((5 / 9) + (17 / 42))
+  ])
+  assert evaluate(doc, ceafe) == approx([0.73333, 0.55, 0.62857], abs=TOL)
+  assert evaluate(doc, lea) == approx([(1 + 2 + 0) / 6,
+      (1 + 3 * (1 / 3) + 2 * 0 + 0) / 7,
+      2 * 0.5 * 2 / 7 / (0.5 + 2 / 7)])
+  assert evaluate(doc, ceafm) == approx([0.66667, 0.57143, 0.61538], abs=TOL)
+  assert evaluate(doc, [blancc, blancn]) == approx([0.35227, 0.27206, 0.30357], abs=TOL)
+
+def test_ZA5():
+  doc = read('TC-ZA.key', 'TC-ZA-5.response',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([1 / 3, 1 / 3, 1 / 3])
+  assert evaluate(doc, b_cubed) == approx([
+      (3 + 1 / 3) / 6, (1 + 4 / 3 + 1 / 2) / 7,
+      2 * (5 / 9) * (17 / 42) / ((5 / 9) + (17 / 42))
+  ])
+  assert evaluate(doc, ceafe) == approx([0.73333, 0.55, 0.62857], abs=TOL)
+  assert evaluate(doc, lea) == approx([(1 + 2 + 0) / 6,
+      (1 + 3 * (1 / 3) + 2 * 0 + 0) / 7,
+      2 * 0.5 * 2 / 7 / (0.5 + 2 / 7)])
+  assert evaluate(doc, ceafm) == approx([0.66667, 0.57143, 0.61538], abs=TOL)
+  assert evaluate(doc, [blancc, blancn]) == approx([0.35227, 0.27206, 0.30357], abs=TOL)
+
+def test_ZB1():
+  doc = read('TC-ZB.key', 'TC-ZB-1.response',keep_zeros=True)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZB1_exlcude_zeros():
+  doc = read('TC-ZB.key', 'TC-ZB-1.response',keep_zeros=False)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZB2():
+  doc = read('TC-ZB.key', 'TC-ZB-2.response',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([1 / 3, 1 / 1, 1 / 2])
+  assert evaluate(doc, b_cubed) == approx([(7 / 3) / 6, 3 / 3, 14 / 25])
+  assert evaluate(doc, ceafe) == approx([0.6, 0.9, 0.72])
+  assert evaluate(doc, ceafm) == approx([0.5, 1, 0.66667], abs=TOL)
+  assert evaluate(doc, lea) == approx([(1 + 3 * (1 / 3)) / 6, 1, 0.5])
+  assert evaluate(doc, [blancc,blancn]) == approx([0.21591, 1, 0.35385], abs=TOL)
+
+def test_ZC1():
+  doc = read('TC-ZC.key', 'TC-ZC-1.response',keep_zeros=True)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZC1_exlcude_zeros():
+  doc = read('TC-ZC.key', 'TC-ZC-1.response',keep_zeros=False)
+  assert evaluate(doc, muc) == (1, 1, 1)
+  assert evaluate(doc, b_cubed) == (1, 1, 1)
+  assert evaluate(doc, ceafe) == (1, 1, 1)
+  assert evaluate(doc, ceafm) == (1, 1, 1)
+  assert evaluate(doc, lea) == (1, 1, 1)
+  assert evaluate(doc, [blancc,blancn]) == (1,1,1)
+
+def test_ZC2():
+  doc = read('TC-ZC.key', 'TC-ZC-2.response','zeros',keep_zeros=True)
+  assert evaluate(doc, muc) == approx([1 / 3, 1 / 1, 1 / 2])
+  assert evaluate(doc, b_cubed) == approx([(7 / 3) / 6, 3 / 3, 14 / 25])
+  assert evaluate(doc, ceafe) == approx([0.6, 0.9, 0.72])
+  assert evaluate(doc, ceafm) == approx([0.5, 1, 0.66667], abs=TOL)
+  assert evaluate(doc, lea) == approx([(1 + 3 * (1 / 3)) / 6, 1, 0.5])
+  assert evaluate(doc, [blancc,blancn]) == approx([0.21591, 1, 0.35385], abs=TOL)

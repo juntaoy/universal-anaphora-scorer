@@ -117,7 +117,7 @@ class Evaluator:
             self.aggregated_r_num = []
             self.aggregated_r_den = []
 
-    def align_split_antecedents(self, key_clusters, sys_clusters, partial_match_dict):
+    def align_split_antecedents(self, key_clusters, sys_clusters, mention_alignment_dict):
         key_split_antecedents = [m for cl in key_clusters for m in cl if m.is_split_antecedent]
         sys_split_antecedents = [m for cl in sys_clusters for m in cl if m.is_split_antecedent]
 
@@ -150,7 +150,7 @@ class Evaluator:
                 key_mention_sys_cluster = key_mention_sys_clusters[j]
                 pn, pd, rn, rd = self.__update__(key_cluster, sys_cluster, key_mention_sys_cluster,
                                                  sys_mention_key_cluster, is_split_alignment=True,
-                                                 partial_match_dict=partial_match_dict)
+                                                 mention_alignment_dict=mention_alignment_dict)
                 raw_numbers[i, j, :] = [pn, pd, rn, rd]
                 precisions[i, j] = 0 if pn == 0 else pn / float(pd)
                 recalls[i, j] = 0 if rn == 0 else rn / float(rd)
@@ -175,40 +175,40 @@ class Evaluator:
     def __update__(self, key_clusters, sys_clusters,
                    key_mention_sys_cluster, sys_mention_key_cluster,
                    key_split_antecedent_sys_r={}, sys_split_antecedent_key_p={},
-                   key_split_antecedent_sys_f={}, is_split_alignment=False, partial_match_dict={}):
-        if self.metric == ceafe or self.metric == ceafm:  # partial_match_map is used for ceaf to allow partial match
-            pn, pd, rn, rd = self.metric(sys_clusters, key_clusters, partial_match_dict, key_split_antecedent_sys_f)
+                   key_split_antecedent_sys_f={}, is_split_alignment=False, mention_alignment_dict={}):
+        if self.metric == ceafe or self.metric == ceafm:  
+            pn, pd, rn, rd = self.metric(sys_clusters, key_clusters, mention_alignment_dict, key_split_antecedent_sys_f)
         elif self.metric == blancc or self.metric == blancn:
-            pn, pd, rn, rd = self.metric(sys_clusters, key_clusters, key_mention_sys_cluster, partial_match_dict,
+            pn, pd, rn, rd = self.metric(sys_clusters, key_clusters, key_mention_sys_cluster, mention_alignment_dict,
                                          key_split_antecedent_sys_f)
         elif self.metric == lea:
             pn, pd = self.metric(sys_clusters, key_clusters,
-                                 sys_mention_key_cluster, partial_match_dict, sys_split_antecedent_key_p,
+                                 sys_mention_key_cluster, mention_alignment_dict, sys_split_antecedent_key_p,
                                  self.lea_split_antecedent_importance)
             rn, rd = self.metric(key_clusters, sys_clusters,
-                                 key_mention_sys_cluster, partial_match_dict, key_split_antecedent_sys_r,
+                                 key_mention_sys_cluster, mention_alignment_dict, key_split_antecedent_sys_r,
                                  self.lea_split_antecedent_importance)
         elif self.metric == muc:
-            pn, pd = self.metric(sys_clusters, key_clusters, sys_mention_key_cluster, partial_match_dict,
+            pn, pd = self.metric(sys_clusters, key_clusters, sys_mention_key_cluster, mention_alignment_dict,
                                  sys_split_antecedent_key_p, is_split_alignment)
-            rn, rd = self.metric(key_clusters, sys_clusters, key_mention_sys_cluster, partial_match_dict,
+            rn, rd = self.metric(key_clusters, sys_clusters, key_mention_sys_cluster, mention_alignment_dict,
                                  key_split_antecedent_sys_r, is_split_alignment)
         elif self.metric == mention_overlap:
-            pn, pd, rn, rd = self.metric(key_clusters, sys_clusters, partial_match_dict)
+            pn, pd, rn, rd = self.metric(key_clusters, sys_clusters, mention_alignment_dict)
         elif self.metric == als_zeros:
-            pn, pd, rn, rd = self.metric(key_clusters, sys_clusters, key_mention_sys_cluster, partial_match_dict)
+            pn, pd, rn, rd = self.metric(key_clusters, sys_clusters, key_mention_sys_cluster, mention_alignment_dict)
         else:
-            pn, pd = self.metric(sys_clusters, sys_mention_key_cluster, partial_match_dict, sys_split_antecedent_key_p)
-            rn, rd = self.metric(key_clusters, key_mention_sys_cluster, partial_match_dict, key_split_antecedent_sys_r)
+            pn, pd = self.metric(sys_clusters, sys_mention_key_cluster, mention_alignment_dict, sys_split_antecedent_key_p)
+            rn, rd = self.metric(key_clusters, key_mention_sys_cluster, mention_alignment_dict, key_split_antecedent_sys_r)
 
         return pn, pd, rn, rd
 
     def update(self, coref_info):
         (key_clusters, sys_clusters, key_mention_sys_cluster,
-         sys_mention_key_cluster, partial_match_dict) = coref_info
+         sys_mention_key_cluster, mention_alignment_dict) = coref_info
 
         key_split_antecedent_sys_r, sys_split_antecedent_key_p, key_split_antecedent_sys_f \
-            = self.align_split_antecedents(key_clusters, sys_clusters, partial_match_dict)
+            = self.align_split_antecedents(key_clusters, sys_clusters, mention_alignment_dict)
 
         pn, pd, rn, rd = self.__update__(key_clusters, sys_clusters,
                                          key_mention_sys_cluster,
@@ -216,7 +216,7 @@ class Evaluator:
                                          key_split_antecedent_sys_r,
                                          sys_split_antecedent_key_p,
                                          key_split_antecedent_sys_f,
-                                         partial_match_dict=partial_match_dict)
+                                         mention_alignment_dict=mention_alignment_dict)
         self.p_num += pn
         self.p_den += pd
         self.r_num += rn
@@ -310,12 +310,12 @@ def mentions(clusters, mention_to_gold, split_antecedent_to_gold={}):
 
 # since we've already done the alignment before, it would be nice if we could use the same alignment to compute the mention overlap
 # I also removed the split-antecedent here so that other format can be benifit from this method as well
-def mention_overlap(key_clusters, sys_clusters, partial_match_dict):
+def mention_overlap(key_clusters, sys_clusters, mention_alignment_dict):
     key_mention_set = set([m for cl in key_clusters for m in cl if not m.is_split_antecedent])
     sys_mention_set = set([m for cl in sys_clusters for m in cl if not m.is_split_antecedent])
     exact_match_mentions = key_mention_set & sys_mention_set
-    partial_key_mentions = key_mention_set & partial_match_dict.keys()
-    partial_sys_mentions = sys_mention_set & partial_match_dict.keys()
+    partial_key_mentions = key_mention_set & mention_alignment_dict.keys()
+    partial_sys_mentions = sys_mention_set & mention_alignment_dict.keys()
     fn_mentions = key_mention_set - exact_match_mentions - partial_key_mentions
     fp_mentions = sys_mention_set - exact_match_mentions - partial_sys_mentions
 
@@ -325,7 +325,7 @@ def mention_overlap(key_clusters, sys_clusters, partial_match_dict):
         all_counts += len(km)
 
     for km in partial_key_mentions:
-        sm = partial_match_dict[km]
+        sm = mention_alignment_dict[km]
         ol = len(km.intersection(sm))
         all_counts += np.array([ol, len(sm), ol, len(km)])
     for km in fn_mentions:
@@ -335,12 +335,12 @@ def mention_overlap(key_clusters, sys_clusters, partial_match_dict):
     return all_counts.tolist()
 
 
-def als_zeros(key_clusters, sys_clusters, sys_mention_to_cluster, partial_match_dict):
-    return anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, partial_match_dict,
+def als_zeros(key_clusters, sys_clusters, sys_mention_to_cluster, mention_alignment_dict):
+    return anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, mention_alignment_dict,
                                lambda m: m.is_zero)
 
 
-def anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, partial_match_dict, anaphor_filter):
+def anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, mention_alignment_dict, anaphor_filter):
     tp, fp, fn, wl = (0, 0, 0, 0)
 
     # get the list of first mentions in sys clusters
@@ -360,8 +360,8 @@ def anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, part
             sys_anaph, sys_anaph_cid = None, None
             if key_anaph in sys_mention_to_cluster:
                 sys_anaph = key_anaph
-            elif key_anaph in partial_match_dict:
-                sys_anaph = partial_match_dict[key_anaph]
+            elif key_anaph in mention_alignment_dict:
+                sys_anaph = mention_alignment_dict[key_anaph]
             if sys_anaph:
                 sys_anaph_cid = sys_mention_to_cluster[sys_anaph]
 
@@ -402,14 +402,14 @@ def anaphor_level_score(key_clusters, sys_clusters, sys_mention_to_cluster, part
     return (tp, tp + fp + wl, tp, tp + fn + wl)
 
 
-def b_cubed(clusters, mention_to_gold, partial_match_dict, split_antecedent_to_gold={}):
+def b_cubed(clusters, mention_to_gold, mention_alignment_dict, split_antecedent_to_gold={}):
     num, den = 0, 0
 
     for c in clusters:
         gold_counts = defaultdict(float)
         correct = 0
         for m in c:
-            m = partial_match_dict.get(m, m)
+            m = mention_alignment_dict.get(m, m)
             if m.is_split_antecedent:
                 if m in split_antecedent_to_gold:
                     gold_split_antecedent, matching_score = split_antecedent_to_gold[m]
@@ -425,13 +425,13 @@ def b_cubed(clusters, mention_to_gold, partial_match_dict, split_antecedent_to_g
     return num, den
 
 
-def muc(clusters, out_clusters, mention_to_gold, partial_match_dict, split_antecedent_to_gold={},
+def muc(clusters, out_clusters, mention_to_gold, mention_alignment_dict, split_antecedent_to_gold={},
         count_singletons=False):
     tp, p = 0, 0
     for c in clusters:
         if len(c) == 1 and count_singletons:
             p += 1
-            m = partial_match_dict.get(c[0], c[0])
+            m = mention_alignment_dict.get(c[0], c[0])
             if m in mention_to_gold and len(out_clusters[mention_to_gold[m]]) == 1:
                 tp += 1
         else:
@@ -440,7 +440,7 @@ def muc(clusters, out_clusters, mention_to_gold, partial_match_dict, split_antec
             linked = set()
             split_antecedent = None
             for m in c:
-                m = partial_match_dict.get(m, m)
+                m = mention_alignment_dict.get(m, m)
                 if m.is_split_antecedent:
                     split_antecedent = m
                 elif m in mention_to_gold:
@@ -461,14 +461,14 @@ def muc(clusters, out_clusters, mention_to_gold, partial_match_dict, split_antec
     return tp, p
 
 
-def phi4(c1, c2, partial_match_dict, split_antecedent_to_sys):
-    return 2 * phi3(c1, c2, partial_match_dict, split_antecedent_to_sys) / float(len(c1) + len(c2))
+def phi4(c1, c2, mention_alignment_dict, split_antecedent_to_sys):
+    return 2 * phi3(c1, c2, mention_alignment_dict, split_antecedent_to_sys) / float(len(c1) + len(c2))
 
 
-def phi3(c1, c2, partial_match_dict, split_antecedent_to_sys):
+def phi3(c1, c2, mention_alignment_dict, split_antecedent_to_sys):
     overlap = 0
     for m in c1:
-        m = partial_match_dict.get(m, m)
+        m = mention_alignment_dict.get(m, m)
         if m.is_split_antecedent:
             if m in split_antecedent_to_sys:
                 gold_split_antecedent, matching_score = split_antecedent_to_sys[m]
@@ -479,24 +479,24 @@ def phi3(c1, c2, partial_match_dict, split_antecedent_to_sys):
     return overlap
 
 
-def ceafe(clusters, gold_clusters, partial_match_dict, key_split_antecedent_sys_f={}):
+def ceafe(clusters, gold_clusters, mention_alignment_dict, key_split_antecedent_sys_f={}):
     clusters = [c for c in clusters]
     scores = np.zeros((len(gold_clusters), len(clusters)))
     for i in range(len(gold_clusters)):
         for j in range(len(clusters)):
-            scores[i, j] = phi4(gold_clusters[i], clusters[j], partial_match_dict, key_split_antecedent_sys_f)
+            scores[i, j] = phi4(gold_clusters[i], clusters[j], mention_alignment_dict, key_split_antecedent_sys_f)
     row_ind, col_ind = linear_sum_assignment(-scores)
     # print(scores,row_ind,col_ind)
     similarity = scores[row_ind, col_ind].sum()
     return similarity, len(clusters), similarity, len(gold_clusters)
 
 
-def ceafm(clusters, gold_clusters, partial_match_dict, key_split_antecedent_sys_f={}):
+def ceafm(clusters, gold_clusters, mention_alignment_dict, key_split_antecedent_sys_f={}):
     clusters = [c for c in clusters]
     scores = np.zeros((len(gold_clusters), len(clusters)))
     for i in range(len(gold_clusters)):
         for j in range(len(clusters)):
-            scores[i, j] = phi3(gold_clusters[i], clusters[j], partial_match_dict, key_split_antecedent_sys_f)
+            scores[i, j] = phi3(gold_clusters[i], clusters[j], mention_alignment_dict, key_split_antecedent_sys_f)
     row_ind, col_ind = linear_sum_assignment(-scores)
     similarity = scores[row_ind, col_ind].sum()
 
@@ -505,14 +505,14 @@ def ceafm(clusters, gold_clusters, partial_match_dict, key_split_antecedent_sys_
     return similarity, sum([len(cl) for cl in clusters]), similarity, sum([len(cl) for cl in gold_clusters])
 
 
-def lea(input_clusters, output_clusters, mention_to_gold, partial_match_dict, split_antecedent_to_gold={},
+def lea(input_clusters, output_clusters, mention_to_gold, mention_alignment_dict, split_antecedent_to_gold={},
         split_antecedent_importance=1):
     num, den = 0, 0
     for c in input_clusters:
         has_split_antecedent = False
         if len(c) == 1:
             all_links = 1
-            m = partial_match_dict.get(c[0], c[0])
+            m = mention_alignment_dict.get(c[0], c[0])
             if m in mention_to_gold and len(
                 output_clusters[mention_to_gold[m]]) == 1:
                 common_links = 1
@@ -522,7 +522,7 @@ def lea(input_clusters, output_clusters, mention_to_gold, partial_match_dict, sp
             common_links = 0
             all_links = len(c) * (len(c) - 1) / 2.0
             for i, m in enumerate(c):
-                m = partial_match_dict.get(m, m)
+                m = mention_alignment_dict.get(m, m)
                 if m.is_split_antecedent:
                     has_split_antecedent = True
                 link_score = 1
@@ -531,7 +531,7 @@ def lea(input_clusters, output_clusters, mention_to_gold, partial_match_dict, sp
                 if m in mention_to_gold:
                     for m2 in c[i + 1:]:
                         link_score2 = 1.0
-                        m2 = partial_match_dict.get(m2, m2)
+                        m2 = mention_alignment_dict.get(m2, m2)
                         if m2.is_split_antecedent and m2 in split_antecedent_to_gold:
                             m2, link_score2 = split_antecedent_to_gold[m2]
                         if m2 in mention_to_gold and mention_to_gold[
@@ -552,18 +552,18 @@ def lea(input_clusters, output_clusters, mention_to_gold, partial_match_dict, sp
     return num, den
 
 
-def blancc(sys_clusters, key_clusters, mention_to_sys, partial_match_dict, split_antecedent_to_sys_f={}):
+def blancc(sys_clusters, key_clusters, mention_to_sys, mention_alignment_dict, split_antecedent_to_sys_f={}):
     num, pd, rd = 0, 0, 0
     for c in key_clusters:
         common_links = 0
         for i, m in enumerate(c):
-            m = partial_match_dict.get(m, m)
+            m = mention_alignment_dict.get(m, m)
             link_score = 1
             if m.is_split_antecedent and m in split_antecedent_to_sys_f:
                 m, link_score = split_antecedent_to_sys_f[m]
             if m in mention_to_sys:
                 for m2 in c[i + 1:]:
-                    m2 = partial_match_dict.get(m2, m2)
+                    m2 = mention_alignment_dict.get(m2, m2)
                     if m2 in mention_to_sys and mention_to_sys[m] == mention_to_sys[m2]:
                         common_links += link_score
 
@@ -573,19 +573,19 @@ def blancc(sys_clusters, key_clusters, mention_to_sys, partial_match_dict, split
     return num, pd, num, rd
 
 
-def blancn(sys_clusters, key_clusters, mention_to_sys, partial_match_dict, split_antecedent_to_sys_f={}):
+def blancn(sys_clusters, key_clusters, mention_to_sys, mention_alignment_dict, split_antecedent_to_sys_f={}):
     num, pd, rd = 0, 0, 0
     for cid, c in enumerate(key_clusters):
         common_links = 0
         for i, m in enumerate(c):
-            m = partial_match_dict.get(m, m)
+            m = mention_alignment_dict.get(m, m)
             link_score = 1
             if m.is_split_antecedent and m in split_antecedent_to_sys_f:
                 m, link_score = split_antecedent_to_sys_f[m]
             if m in mention_to_sys:
                 for c2 in key_clusters[cid + 1:]:
                     for m2 in c2:
-                        m2 = partial_match_dict.get(m2, m2)
+                        m2 = mention_alignment_dict.get(m2, m2)
                         link_score2 = 1
                         if m2.is_split_antecedent and m2 in split_antecedent_to_sys_f:
                             m2, link_score2 = split_antecedent_to_sys_f[m2]

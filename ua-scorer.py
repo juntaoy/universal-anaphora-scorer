@@ -46,7 +46,8 @@ def compatibility_check(args):
 
     if args['partial_match'] and args['partial_match_method'] == 'craft' and format != 'ua':
         error_msg += 'The craft partial match method is only available for ua format.\n'
-
+    if args['keep_zeros'] and args['zero_match_method'] == 'dependent' and format !='corefud':
+        error_msg += 'The dependent match method for zeros are only available for corefud format.\n'
     if error_msg:
         raise UnSuporttedFunctionError(error_msg)
 
@@ -83,6 +84,7 @@ SHARED_TASK_SETTINGS = {
         "format": 'corefud',
         "metrics": ['muc', 'bcub', 'ceafe', 'mention', 'zero'],
         "keep_singletons": True,
+        "keep_zeros":True,
         "partial_match": True,
         "partial_match_method": 'default'
     },
@@ -122,6 +124,10 @@ def main():
                            help='evaluate also singletons; ignored otherwise')
     argparser.add_argument('-l', '--keep-split-antecedents', action='store_true', default=False,
                            help='evaluate also split-antecedents; ignored otherwise')
+    argparser.add_argument('-z', '--keep-zeros', action='store_true', default=False,
+                           help='evaluate also zeros; ignored otherwise')
+    argparser.add_argument('--zero-match-method', choices=['linear', 'dependent'], default='linear',
+                           help='the method used for zero anaphora matching')
     argparser.add_argument('-d', '--evaluate-discourse-deixis', action='store_true', default=False,
                            help='evaluate discourse deixis instead of identity anaphora')
     argparser.add_argument('-p', '--partial-match', action='store_true', default=False,
@@ -220,6 +226,8 @@ def main():
             msg += ', singletons'
         if args['keep_split_antecedent']:
             msg += ', split-antecedents'
+        if args['keep_zeros']:
+            msg += ', zeros (using {:s} match method)'.format(args['zero_match_method'])
         if args['keep_non_referring']:
             msg += ', non-referring mentions'
         if args['keep_bridging']:
