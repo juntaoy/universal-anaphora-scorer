@@ -1,0 +1,89 @@
+TC-NCMA-1 - perfect matching to contiguous keys:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:2-13)          (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=1 [recall=5/5=1, prec=5/5=1]
+Expected: MUC=1 [recall=3/3=1, prec=3/3=1]
+
+TC-NCMA-2 - response "a" is a contiguous subset of key "a" and covers its head:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:5-12)          (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=1 [recall=5/5=1, prec=5/5=1]
+Expected: MUC=1 [recall=3/3=1, prec=3/3=1]
+
+TC-NCMA-3 - response "a" is contiguous, but not a subset of key "a", covering its head, though:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:5-15)          (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMA-4 - response "a" is a contiguous subset of key "a" but not covering its head:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:11-13)         (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMA-5 - response "a" is a non-contiguous subset of key "a" and covers its head:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:4-10,12)       (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=1 [recall=5/5=1, prec=5/5=1]
+Expected: MUC=1 [recall=3/3=1, prec=3/3=1]
+
+TC-NCMA-6 - response "a" is non-contiguous, but not a subset of key "a", covering its head, though:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:1-5,10-11)     (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMA-7 - response "a" is a non-contiguous subset of key "a" but not covering its head:
+Key/Ref: {(a:2-9,10*,11-13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:4-6,11-13)     (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-1 - perfect matching, key "a" is non-contiguous:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:2-7,10-11,13)  (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=1 [recall=5/5=1, prec=5/5=1]
+Expected: MUC=1 [recall=3/3=1, prec=3/3=1]
+
+TC-NCMB-2 - contiguous response "a" matches the head of non-contiguous key "a":
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:10)            (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=1 [recall=5/5=1, prec=5/5=1]
+Expected: MUC=1 [recall=3/3=1, prec=3/3=1]
+
+TC-NCMB-3 - contiguous response "a" both is not a subset of non-contiguous key "a" and does not cover its head:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:10-13)         (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-4 - contiguous response "a" is a subset of non-contiguous key "a", but does not cover its head:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:13)            (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-5 - contiguous response "a" is not a subset of non-contiguous key "a", covering its head, though:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:5-10)          (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-6 - non-contiguous response "a" is not a subset of non-contiguous key "a", although lying between its left and right boundaries and covering its head:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:2-4,6-10)      (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-7 - non-contiguous response "a" is neither a subset of non-contiguous key "a" nor lies between its left and right boundaries, covering its head, though:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:2-4,10-17)     (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]
+
+TC-NCMB-8 - non-contiguous response "a" is a subset of non-contiguous key "a", but does not cover its head:
+Key/Ref: {(a:2-7,10*,11,13) (c:48*)} {(b:30*,32-33) (d:63*,64) (e:67*)}
+Rsp/Sys: {(a:2-4,13)        (c:48) } {(b:30-33)     (d:63-64)  (e:67) }
+Expected: BCUB=7/10 [recall=7/10, prec=7/10]
+Expected: MUC=2/3 [recall=2/3, prec=2/3]

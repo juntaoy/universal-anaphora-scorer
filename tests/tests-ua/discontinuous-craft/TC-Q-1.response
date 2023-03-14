@@ -1,0 +1,27 @@
+# global.columns = ID FORM LEMMA UPOS XPOS FEATS HEAD DEPREL DEPS MISC IDENTITY BRIDGING DISCOURSE_DEIXIS REFERENCE NOM_SEM
+# newdoc id = LuoTestCase
+# sent_id = LuoTestCase-1
+# text = a b c d e f g h .
+1     a  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_1)  _  _  _  _
+2     b  _  _  _  _  _  _  _  _  _  _  _  _  _
+3     c  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_1)  _  _  _  _
+4     d  _  _  _  _  _  _  _  _  _  _  _  _  _
+5     e  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_2  _  _  _  _
+6     f  _  _  _  _  _  _  _  _  )  _  _  _  _
+7     g  _  _  _  _  _  _  _  _  _  _  _  _  _
+8     h  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_1)  _  _  _  _
+9     .  _  _  _  _  _  _  _  _  _  _  _  _  _
+
+# sent_id = LuoTestCase-2
+# text = i j k l m n o p q r .
+10    i  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_2  _  _  _  _
+11    j  _  _  _  _  _  _  _  _  )  _  _  _  _
+12    k  _  _  _  _  _  _  _  _  _  _  _  _  _
+13    l  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_2)  _  _  _  _
+14    m  _  _  _  _  _  _  _  _  _  _  _  _  _
+15    n  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_3)  _  _  _  _
+16    o  _  _  _  _  _  _  _  _  _  _  _  _  _
+17    p  _  _  _  _  _  _  _  _  (EntityID=0|MarkableID=markable_3  _  _  _  _
+18    q  _  _  _  _  _  _  _  _  _  _  _  _  _
+19    r  _  _  _  _  _  _  _  _  )  _  _  _  _
+20    .  _  _  _  _  _  _  _  _  _  _  _  _  _
