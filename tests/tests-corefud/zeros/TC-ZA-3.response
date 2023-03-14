@@ -1,0 +1,29 @@
+# newdoc id = LuoTestCase
+# global.Entity = eid-etype-head-other
+# sent_id = LuoTestCase-1
+# text = sentence
+1	_	_	_	_	_	0	_	_	Entity=(e0-x-1-
+2	_	_	_	_	_	0	_	_	Entity=e0)
+3	_	_	_	_	_	0	_	_	_
+4	_	_	_	_	_	0	_	_	Entity=(e1-x-1-
+5	_	_	_	_	_	0	_	_	_
+6	_	_	_	_	_	0	_	_	_
+7	_	_	_	_	_	0	_	_	Entity=e1)
+8	_	_	_	_	_	0	_	_	_
+9	_	_	_	_	_	0	_	_	_
+
+# sent_id = LuoTestCase-2
+# text = sentence
+1	_	_	_	_	_	0	_	_	Entity=(e1-x-1-)
+2	_	_	_	_	_	0	_	_	_
+2.1	_	_	_	_	_	0	_	_	Entity=(e1-x-1-)
+3	_	_	_	_	_	0	_	_	Entity=(e2-x-1-
+4	_	_	_	_	_	0	_	_	Entity=e2)
+5	_	_	_	_	_	0	_	_	Entity=(e2-x-1-)
+5.1	_	_	_	_	_	0	_	_	Entity=(e2-x-1-)
+6	_	_	_	_	_	0	_	_	Entity=(e3-x-1-)
+7	_	_	_	_	_	0	_	_	Entity=(e2-x-1-
+8	_	_	_	_	_	0	_	_	_
+9	_	_	_	_	_	0	_	_	Entity=e2)
+10	_	_	_	_	_	0	_	_	_
+

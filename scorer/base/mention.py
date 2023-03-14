@@ -94,6 +94,9 @@ class Mention:
 
         return NotImplemented
 
+    def _zero_dependent_match_score(self,other):
+        return NotImplemented
+
     def intersection(self, other):
         if isinstance(other, self.__class__):
             if self._words[0] > other._words[-1] or \

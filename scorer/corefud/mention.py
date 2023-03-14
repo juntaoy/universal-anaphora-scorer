@@ -67,3 +67,7 @@ class CorefUDMention(Mention):
             self._is_zero = head.is_empty()
         else:
             self._is_zero = nodes[0].is_empty()
+
+    #TODO to be implemented by Michal
+    def _zero_dependent_match_score(self,other):
+        return NotImplemented
