@@ -82,8 +82,8 @@ SHARED_TASK_SETTINGS = {
     },
     "crac22": {
         "format": 'corefud',
-        "metrics": ['muc', 'bcub', 'ceafe', 'mention', 'zero'],
-        "keep_singletons": True,
+        "metrics": ['lea', 'muc', 'bcub', 'ceafe', 'blanc', 'mention', 'zero'],
+        "keep_singletons": False,
         "keep_zeros":True,
         "partial_match": True,
         "partial_match_method": 'default'
@@ -110,6 +110,12 @@ SHARED_TASK_SETTINGS = {
 
 
 def main():
+    task_parser = argparse.ArgumentParser()
+    task_parser.add_argument('-t','--shared-task',
+                           choices=['conll12', 'crac18', 'craft19', 'crac22', 'codicrac22ar', 'codicrac22br', 'codicrac22dd'],
+                           help='use specific shared task settings, this will overridde all other settings, for more detail please check shared task website')
+    task_args, rest_argline = task_parser.parse_known_args()
+
     argparser = argparse.ArgumentParser(description="Universal Anaphora scorer v2.0")
     argparser.add_argument('key_file', type=str, help='path to the key/reference file')
     argparser.add_argument('sys_file', type=str, help='path to the system/response file')
@@ -130,7 +136,7 @@ def main():
                            help='the method used for zero anaphora matching')
     argparser.add_argument('-d', '--evaluate-discourse-deixis', action='store_true', default=False,
                            help='evaluate discourse deixis instead of identity anaphora')
-    argparser.add_argument('-p', '--partial-match', action='store_true', default=False,
+    argparser.add_argument('-p', '--partial-match', action=argparse.BooleanOptionalAction, default=False,
                            help='use partial match for matching key and system mentions; exact match otherwise')
     argparser.add_argument('--partial-match-method', choices=['default', 'craft'], default='default',
                            help='the method used for partial matching')
@@ -141,12 +147,16 @@ def main():
     argparser.add_argument('--np-only', action='store_true', default=False, help='evaluate only NP metnions')
     argparser.add_argument('--remove-nested-mentions', action='store_true', default=False,
                            help='evaluate only flat metnions')
+    # the --shared-task argument is already consumed by the task_parser; added here just to appear in the help message
     argparser.add_argument('-t','--shared-task',
                            choices=['conll12', 'crac18', 'craft19', 'crac22', 'codicrac22ar', 'codicrac22br',
                                     'codicrac22dd'],
                            help='use specific shared task settings, this will overridde all other settings, for more detail please check shared task website')
 
-    args = vars(argparser.parse_args())
+    if task_args.shared_task is not None:
+        argparser.set_defaults(**SHARED_TASK_SETTINGS[task_args.shared_task])
+
+    args = vars(argparser.parse_args(rest_argline))
 
     metric_dict = {
         'muc': evaluator.muc, 'bcub': evaluator.b_cubed,
@@ -158,46 +168,40 @@ def main():
         'non-referring': evaluator.evaluate_non_referrings,
         'bridging': evaluator.evaluate_bridgings
     }
-    if args['shared_task']:
-        key_file = args['key_file']
-        sys_file = args['sys_file']
-        args = SHARED_TASK_SETTINGS[args['shared_task']]
-        args['key_file'] = key_file
-        args['sys_file'] = sys_file
-    else:
-        if 'all' in args['metrics']:
-            if args['format'] == 'conll':
-                args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero', 'non-referring', 'bridging']]
-            elif args['format'] == 'corefud':
-                args['metrics'] = [m for m in metric_dict.keys() if m not in ['non-referring', 'bridging']]
-            else:
-                args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero']]
-        elif 'conll' in args['metrics']:
-            args['metrics'] = ['muc', 'bcub', 'ceafe']
 
-        if args['only_split_antecedent']:
-            for must_true in ['keep_split_antecedent', 'keep_singletons']:
-                if args[must_true] == False:
-                    autoreset_msg(must_true, True, 'only_split_antecedent')
-                    args[must_true] = True
-            for un_metric in ['bridging', 'non-referring', 'zero']:
-                if un_metric in args['metrics']:
-                    metric_autoremove_msg(un_metric, 'only_split_antecedent')
+    if 'all' in args['metrics']:
+        if args['format'] == 'conll':
+            args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero', 'non-referring', 'bridging']]
+        elif args['format'] == 'corefud':
+            args['metrics'] = [m for m in metric_dict.keys() if m not in ['non-referring', 'bridging']]
+        else:
+            args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero']]
+    elif 'conll' in args['metrics']:
+        args['metrics'] = ['muc', 'bcub', 'ceafe']
 
-        if args['evaluate_discourse_deixis']:
-            for must_true in ['keep_split_antecedent', 'keep_singletons']:
-                if args[must_true] == False:
-                    autoreset_msg(must_true, True, 'evaluate_discourse_deixis')
-                    args[must_true] = True
+    if args['only_split_antecedent']:
+        for must_true in ['keep_split_antecedent', 'keep_singletons']:
+            if args[must_true] == False:
+                autoreset_msg(must_true, True, 'only_split_antecedent')
+                args[must_true] = True
+        for un_metric in ['bridging', 'non-referring', 'zero']:
+            if un_metric in args['metrics']:
+                metric_autoremove_msg(un_metric, 'only_split_antecedent')
 
-            for must_false in ['only_split_antecedent']:
-                if args[must_false] == True:
-                    autoreset_msg(must_false, False, 'evaluate_discourse_deixis')
-                    args[must_false] = False
+    if args['evaluate_discourse_deixis']:
+        for must_true in ['keep_split_antecedent', 'keep_singletons']:
+            if args[must_true] == False:
+                autoreset_msg(must_true, True, 'evaluate_discourse_deixis')
+                args[must_true] = True
 
-            for un_metric in ['bridging', 'non-referring', 'zero']:
-                if un_metric in args['metrics']:
-                    metric_autoremove_msg(un_metric, 'evaluate_discourse_deixis')
+        for must_false in ['only_split_antecedent']:
+            if args[must_false] == True:
+                autoreset_msg(must_false, False, 'evaluate_discourse_deixis')
+                args[must_false] = False
+
+        for un_metric in ['bridging', 'non-referring', 'zero']:
+            if un_metric in args['metrics']:
+                metric_autoremove_msg(un_metric, 'evaluate_discourse_deixis')
 
     compatibility_check(args)
 
