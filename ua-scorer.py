@@ -25,8 +25,9 @@ def compatibility_check(args):
         "conll": ['np_only', 'remove_nested_mentions']
     }
     format_specific_metrics = {
-        "ua": ['non-referring', 'bridging'],
-        "corefud": ["zero"]
+        "ua": ['non-referring', 'bridging', 'mention'],
+        "conll": ['mention'],
+        "corefud": ['zero', 'mor']
     }
 
     for target_format in format_specific_tags:
@@ -82,7 +83,7 @@ SHARED_TASK_SETTINGS = {
     },
     "crac22": {
         "format": 'corefud',
-        "metrics": ['lea', 'muc', 'bcub', 'ceafe', 'blanc', 'mention', 'zero'],
+        "metrics": ['lea', 'muc', 'bcub', 'ceafe', 'ceafm', 'blanc', 'mor', 'zero'],
         "keep_singletons": False,
         "keep_zeros":True,
         "partial_match": True,
@@ -122,7 +123,7 @@ def main():
     argparser.add_argument('-f', '--format', choices=['ua', 'corefud', 'conll'], default='ua',
                            help='the input format for the scorer.')
     argparser.add_argument('-m', '--metrics',
-                           choices=['all', 'conll', 'muc', 'bcub', 'ceafe', 'ceafm', 'blanc', 'lea', 'mention', 'zero',
+                           choices=['all', 'conll', 'muc', 'bcub', 'ceafe', 'ceafm', 'blanc', 'lea', 'mention', 'mor', 'zero',
                                     'non-referring', 'bridging'],
                            nargs='*', default='conll',
                            help='metrics to be used for evaluation, conll=avg[muc, bcub, ceafe]')
@@ -162,7 +163,8 @@ def main():
         'muc': evaluator.muc, 'bcub': evaluator.b_cubed,
         'ceafe': evaluator.ceafe, 'ceafm': evaluator.ceafm,
         'blanc': [evaluator.blancc, evaluator.blancn], 'lea': evaluator.lea,
-        'mention': (evaluator.mention_overlap if args['partial_match'] else evaluator.mentions),
+        'mention': evaluator.mentions,
+        'mor': evaluator.mention_overlap,
         # we can use mention_overlap for partial match and mention F1 for exact_match
         'zero': evaluator.als_zeros,
         'non-referring': evaluator.evaluate_non_referrings,
