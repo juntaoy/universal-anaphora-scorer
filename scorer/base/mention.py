@@ -1,9 +1,12 @@
 class Mention:
+    """Base class for a mention.
+    
+    Here we only include the properties that might be used outside the mention class.
+    We assign default values to them to avoid an error even if not overriden by a class
+    corresponding to a specific format.
+    """
     def __init__(self):
-        # here we only include the properties might be used outside the mention class,
-        # and assign a default value to make sure no error even if fuction not used by
-        # specific format
-        self._words = []  # store all word indies
+        self._words = []  # store all word indices
         self._wordsset = set()
         self._minset = set()
         self._is_referring = True  # for non-referring
@@ -59,39 +62,43 @@ class Mention:
                     return False
                 words_zip = zip(self._words, other._words)
                 return all(self_w == other_w for self_w, other_w in words_zip)
+        return NotImplemented
 
-    # Default (with MIN tag) similar to the CorefUD that allow the response to be part of the key, in the
-    #             sametime the response must include all the words in MIN(head), if the above condition is
-    #             satisfied then a non-zero similarity score based on the proportion of the common words
-    #             (num_of_common_words/total_words_in_key) will be returned otherwise 0 will be returned.
     def _corefud_partial_match_score(self, other):
-        if self._minset and self._minset.issubset(other._wordsset) and other._wordsset.issubset(
-            self._wordsset):  # MIN only annotated in the key
-            return len(self._wordsset & other._wordsset) * 1.0 / len(self._wordsset)
-        elif other._minset and other._minset.issubset(self._wordsset) and self._wordsset.issubset(
-            other._wordsset):
-            return len(self._wordsset & other._wordsset) * 1.0 / len(other._wordsset)
+        """Partial matching method similar to the approach proposed by the CorefUD scorer.
+        It allows the response to be part of the key and in the same time the response 
+        must include all the words in MIN (head).
+        If the above condition is satisfied, a non-zero similarity score based on the
+        proportion of the common words (`num_of_common_words/total_words_in_key`) is returned.
+        Otherwise 0 is returned.
+        Current default partial matching.
+        """
+        # MIN only annotated in the key
+        if self._minset and self._minset.issubset(other._wordsset) and \
+            other._wordsset.issubset(self._wordsset):
+            return len(self._wordsset & other._wordsset) / len(self._wordsset)
+        elif other._minset and other._minset.issubset(self._wordsset) and \
+            self._wordsset.issubset(other._wordsset):
+            return len(self._wordsset & other._wordsset) / len(other._wordsset)
+        return 0
 
-        return 0.0
-
-    # CRAFT (with craft tag) same as the CRAFT 2019 CR task that use the first key span as the MIN and any
-    #             response that overlapping with the MIN (start>=MIN[0] and end <=MIN[1]) will receive a
-    #             non-zero similarity score otherwise a zero will be returned.
     def _craft_partial_match_score(self, other):
-        # only support UA format yet
+        """CRAFT partial matching used in the CRAFT 2019 CR task.
+        It uses the first key span as the MIN and any response that overlaps with the MIN
+        (start>=MIN[0] and end<=MIN[1]) receives a non-zero similarity score.
+        Otherwise 0 is returned.
+        Only supported in the UA format, yet.
+        """
         return NotImplemented
 
     def _partial_match_score(self, other, method='default'):
         if isinstance(other, self.__class__):
             if self.__eq__(other):
-                return 1.0
-
+                return 1
             if method.lower() == 'default':
                 return self._corefud_partial_match_score(other)
-
             elif method.lower() == 'craft':
                 return self._craft_partial_match_score(other)
-
         return NotImplemented
 
     def _zero_dependent_match_score(self,other):

@@ -88,7 +88,7 @@ class CorefUDReader(Reader):
             if not self.keep_zeros:
                 o_size = len(cluster)
                 cluster = [m for m in cluster if not m.is_zero]
-                removed_zeros+= o_size - len(cluster)
+                removed_zeros += o_size - len(cluster)
             processed_clusters.append(cluster)
         return processed_clusters, removed_singletons, removed_zeros
 

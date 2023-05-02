@@ -173,9 +173,9 @@ def main():
 
     if 'all' in args['metrics']:
         if args['format'] == 'conll':
-            args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero', 'non-referring', 'bridging']]
+            args['metrics'] = [m for m in metric_dict.keys() if m not in ['mor', 'zero', 'non-referring', 'bridging']]
         elif args['format'] == 'corefud':
-            args['metrics'] = [m for m in metric_dict.keys() if m not in ['non-referring', 'bridging']]
+            args['metrics'] = [m for m in metric_dict.keys() if m not in ['mention', 'non-referring', 'bridging']]
         else:
             args['metrics'] = [m for m in metric_dict.keys() if m not in ['zero']]
     elif 'conll' in args['metrics']:
@@ -227,7 +227,7 @@ def main():
             msg += ', ' if msg[-1] == ' ' else ''
             msg += 'bridging relations'
     else:
-        msg += 'corferent markables'
+        msg += 'coreferent markables'
         if args['keep_singletons']:
             msg += ', singletons'
         if args['keep_split_antecedent']:

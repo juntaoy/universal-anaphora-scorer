@@ -225,7 +225,7 @@ class UAReader(Reader):
         return (merged_clusters, processed_non_referrings,
                 removed_non_referring, removed_singletons, removed_zeros)
 
-    def get_coref_infos(self, key_file, sys_file,unit_test=False):
+    def get_coref_infos(self, key_file, sys_file, unit_test=False):
         key_docs = self.get_all_docs(key_file)
         sys_docs = self.get_all_docs(sys_file)
 

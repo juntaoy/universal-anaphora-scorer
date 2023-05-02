@@ -4,7 +4,7 @@ from scipy.optimize import linear_sum_assignment
 
 class Reader:
     class DataAlignError(BaseException):
-        def __init__(self, key_node, sys_node, misalign_source="Words",key_name='key',sys_name='sys'):
+        def __init__(self, key_node, sys_node, misalign_source="Words", key_name='key', sys_name='sys'):
             self.key_node = key_node
             self.sys_node = sys_node
             self.misalign_source = misalign_source
@@ -12,12 +12,8 @@ class Reader:
             self.sys_name = sys_name
 
         def __str__(self):
-            return "{:s} in key and sys are not aligned: {:s}={:s}, {:s}={:s}".format(
-                self.misalign_source,
-                self.key_name,
-                str(self.key_node),
-                self.sys_name,
-                str(self.sys_node))
+            return f"{self.misalign_source} in key and sys are not aligned: \
+                        {self.key_name}={str(self.key_node)}, {self.sys_name}={str(self.sys_node)}"
 
     class CorefFormatError(BaseException):
         def __init__(self, message):
@@ -28,22 +24,22 @@ class Reader:
 
     def __init__(self,**kwargs):
         self._doc_coref_infos = {}
-        self._doc_non_referring_infos={}
-        self._doc_bridging_infos={}
+        self._doc_non_referring_infos = {}
+        self._doc_bridging_infos = {}
         self._doc_discourse_deixis_infos = {}
 
-        self.keep_singletons = kwargs.get("keep_singletons",False)
-        self.keep_split_antecedents = kwargs.get("keep_split_antecedents",False)
-        self.keep_bridging = kwargs.get("keep_bridging",False)
-        self.keep_non_referring = kwargs.get("keep_non_referring",False)
-        self.evaluate_discourse_deixis = kwargs.get("evaluate_discourse_deixis",False)
-        self.partial_match = kwargs.get("partial_match",False)
-        self.partial_match_method = kwargs.get("partial_match_method",'default')
-        self.keep_zeros = kwargs.get("keep_zeros",False)
-        self.zero_math_method = kwargs.get("zero_match_method",'linear')
-        self.allow_boundary_crossing = kwargs.get("allow_boundary_crossing",False)
-        self.np_only = kwargs.get('np_only',False)
-        self.remove_nested_mentions = kwargs.get('remove_nested_mentions',False)
+        self.keep_singletons = kwargs.get("keep_singletons", False)
+        self.keep_split_antecedents = kwargs.get("keep_split_antecedents", False)
+        self.keep_bridging = kwargs.get("keep_bridging", False)
+        self.keep_non_referring = kwargs.get("keep_non_referring", False)
+        self.evaluate_discourse_deixis = kwargs.get("evaluate_discourse_deixis", False)
+        self.partial_match = kwargs.get("partial_match", False)
+        self.partial_match_method = kwargs.get("partial_match_method", 'default')
+        self.keep_zeros = kwargs.get("keep_zeros", False)
+        self.zero_match_method = kwargs.get("zero_match_method", 'linear')
+        self.allow_boundary_crossing = kwargs.get("allow_boundary_crossing", False)
+        self.np_only = kwargs.get('np_only', False)
+        self.remove_nested_mentions = kwargs.get('remove_nested_mentions', False)
 
     #the minimum requirement is to implement the coreference part
     @property
@@ -82,19 +78,19 @@ class Reader:
     def get_mention_assignments(self, key_clusters, sys_clusters):
         key_mention_set = set([m for cl in key_clusters for m in cl])
         sys_mention_set = set([m for cl in sys_clusters for m in cl])
-        if self.keep_zeros and self.zero_math_method == 'dependent':
+        if self.keep_zeros and self.zero_match_method == 'dependent':
             s_num = len([ m for m in key_mention_set & sys_mention_set if not m.is_zero])
         else:
             s_num = len(key_mention_set & sys_mention_set)
 
-        #the dict is shared between zeros for dependent alignment
+        # the dict is shared between zeros for dependent alignment
         # method and the non-zeros mentions's partial matching
         mention_alignment_dict = {}
 
-        if self.keep_zeros and self.zero_math_method == 'dependent':
+        if self.keep_zeros and self.zero_match_method == 'dependent':
             key_zeros = [m for m in key_mention_set if m.is_zero]
             sys_zeros = [m for m in sys_mention_set if m.is_zero]
-            if len(key_zeros) > 0 and len(sys_zeros) >0:
+            if len(key_zeros) > 0 and len(sys_zeros) > 0:
                 key_zeros.sort()
                 sys_zeros.sort()
                 similarity = np.zeros((len(key_zeros), len(sys_zeros)))
@@ -110,20 +106,20 @@ class Reader:
                         mention_alignment_dict[sys_mention] = key_mention
                         mention_alignment_dict[key_mention] = sys_mention
 
-
-
         logging.debug('Total key mentions:', len(key_mention_set))
         logging.debug('Total response mentions:', len(sys_mention_set))
-        logging.debug('Strictly correct indentified mentions:', s_num)
+        logging.debug('Strictly matched mentions:', s_num)
 
-        #we no longer add partial matching to sys_mention_key_cluster or key_mention_sys_cluster the partial matching
-        #is not handled by partial_match_dict alone.
+        # exact matching
+        # partially matched mentions are not indexed by sys_mention_key_cluster and key_mention_sys_cluster
+        # instead, mention_alignment_dict is used for partial matching
         sys_mention_key_cluster, key_non_aligned = self.get_mention_cluster_alignment(key_clusters, sys_mention_set)
         key_mention_sys_cluster, sys_non_aligned = self.get_mention_cluster_alignment(sys_clusters, key_mention_set)
 
+        # partial matching
         use_CRAFT = self.partial_match_method == 'craft'
         p_num = 0
-        if self.partial_match and len(key_non_aligned) > 0 and len(sys_non_aligned) > 0:  # partial matching
+        if self.partial_match and len(key_non_aligned) > 0 and len(sys_non_aligned) > 0:
             # sort the mentions in order by start and end indices so that the KM algorithm can make
             # the alignment using same rule as corefUD:
             # 1. pick the mention that overlaps with m with proportionally smallest difference
@@ -167,9 +163,9 @@ class Reader:
                         # key_mention_sys_cluster[key_mention] = key_mention_sys_cluster[sys_mention]
                         mention_alignment_dict[sys_mention] = key_mention
                         mention_alignment_dict[key_mention] = sys_mention
-        logging.debug('Partially correct identified mentions:', p_num)
-        logging.debug('No identified:', len(key_mention_set) - s_num - p_num)
-        logging.debug('Invented:', len(sys_mention_set) - s_num - p_num)
+        logging.debug('Partially matched mentions:', p_num)
+        logging.debug('Unmatched key mentions:', len(key_mention_set) - s_num - p_num)
+        logging.debug('Spurious response mentions:', len(sys_mention_set) - s_num - p_num)
 
 
         return sys_mention_key_cluster, key_mention_sys_cluster, mention_alignment_dict

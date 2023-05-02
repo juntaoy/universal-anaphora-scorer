@@ -2,7 +2,7 @@ from scorer.base.mention import Mention
 
 
 class CorefUDMention(Mention):
-    """Representation of (potentially non-contiguous) mention for the evaluation script.
+    """Representation of a mention for the CorefUD format.
     It must allow mention matching in two documents that are aligned, yet likely marked with different coreference relations.
     A mention is thus defined only by position of the words (sentence ord and word ord) the mention is formed by.
 
