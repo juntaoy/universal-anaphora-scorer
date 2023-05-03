@@ -11,7 +11,9 @@ class UAMention(Mention):
         else:
             for s, e in zip(start, end):
                 for w in range(s, e + 1):
-                    self._words.append(w)  # [s,e] both inclusive
+                    # include all words in [s,e] both inclusive
+                    # any possible zeros in between are ignored
+                    self._words.append(w)
             self._words.sort()
         self._wordsset = set(self._words)
         self._is_referring = is_referring
