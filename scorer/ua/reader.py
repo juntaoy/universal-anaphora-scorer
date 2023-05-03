@@ -1,7 +1,7 @@
 import logging
 from scorer.base.reader import Reader
 from scorer.ua.mention import UAMention
-from collections import deque
+from collections import deque, defaultdict
 
 __author__ = 'ns-moosavi; juntaoy'
 
@@ -23,8 +23,8 @@ class UAReader(Reader):
         use_CRAFT_MIN = self.partial_match_method == 'craft'
 
         markables_cluster = {}
-        markables_start = {}
-        markables_end = {}
+        markables_start = defaultdict(list)
+        markables_end = defaultdict(list)
         markables_MIN = {}
         markables_coref_tag = {}
         markables_split = {}  # set_id: [markable_id_1, markable_id_2 ...]
@@ -70,9 +70,7 @@ class UAReader(Reader):
                     markable_id = markable_info['MarkableID']
                     cluster_id = markable_info['EntityID']
                     markables_cluster[markable_id] = cluster_id
-                    if markable_id not in markables_start:
-                        markables_start[markable_id] = []
-                        markables_end[markable_id] = []
+                    if markable_id not in markables_is_zero:
                         markables_is_zero[markable_id] = is_zero
 
                     if is_zero:
