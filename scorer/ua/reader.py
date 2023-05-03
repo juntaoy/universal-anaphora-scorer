@@ -66,7 +66,7 @@ class UAReader(Reader):
                             raise self.CorefFormatError(
                                 f'Zeros should not be used as start/end of the standard mentions. {line}')
                         single_word = False
-                    markable_info = {p[:p.find('=')]: p[p.find('=') + 1:] for p in markable_annotation.split('|')}
+                    markable_info = dict(pair for pair in (p.split("=", 1) for p in markable_annotation.split('|')) if len(pair) == 2)
                     markable_id = markable_info['MarkableID']
                     cluster_id = markable_info['EntityID']
                     markables_cluster[markable_id] = cluster_id
