@@ -1,7 +1,7 @@
 from scorer.base.mention import Mention
 
 class UAMention(Mention):
-    def __init__(self, start, end, MIN, is_referring, is_split_antecedent=False, split_antecedent_sets=set(),is_zero=False):
+    def __init__(self, start, end, MIN, is_referring, is_split_antecedent=False, split_antecedent_sets=set(), is_zero=False):
         super().__init__()
 
         if is_zero:

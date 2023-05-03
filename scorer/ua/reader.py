@@ -47,7 +47,7 @@ class UAReader(Reader):
                 if markable_annotations[0]:
                     # the close bracket
                     if is_zero:
-                        raise self.CorefFormatError('Zeros should not be used as start/end of the standard mentions. {}'.format(line))
+                        raise self.CorefFormatError(f'Zeros should not be used as start/end of the standard mentions. {line}')
                     if self.allow_boundary_crossing:
                         for markable_id in markable_annotations[0].split(")"):
                             if len(markable_id) > 0:
@@ -64,7 +64,7 @@ class UAReader(Reader):
                     else:
                         if is_zero:
                             raise self.CorefFormatError(
-                                'Zeros should not be used as start/end of the standard mentions. {}'.format(line))
+                                f'Zeros should not be used as start/end of the standard mentions. {line}')
                         single_word = False
                     markable_info = {p[:p.find('=')]: p[p.find('=') + 1:] for p in markable_annotation.split('|')}
                     markable_id = markable_info['MarkableID']
@@ -229,7 +229,7 @@ class UAReader(Reader):
         key_docs = self.get_all_docs(key_file)
         sys_docs = self.get_all_docs(sys_file)
 
-        self.check_data_alignment(key_docs,sys_docs,unit_test=unit_test)
+        self.check_data_alignment(key_docs, sys_docs, unit_test=unit_test)
 
         for doc in key_docs:
             markable_column = 12 if self.evaluate_discourse_deixis else 10
@@ -299,18 +299,19 @@ class UAReader(Reader):
                 tokens.append(columns[word_column])
         return tokens
 
-    def check_data_alignment(self, key_docs, sys_docs, word_column=1,unit_test=False):
+    def check_data_alignment(self, key_docs, sys_docs, word_column=1, unit_test=False):
         if len(key_docs.keys()) != len(sys_docs.keys()) or \
             len(key_docs.keys() - sys_docs.keys()) > 0 or \
             len(sys_docs.keys() - key_docs.keys()) > 0:
-            raise self.DataAlignError(key_docs.keys() - sys_docs.keys(),sys_docs.keys() - key_docs.keys(),"Documents","doc missing in sys","doc inserting in sys")
+            raise self.DataAlignError(key_docs.keys() - sys_docs.keys(), sys_docs.keys() - key_docs.keys(), "Documents", "doc missing in sys", "doc inserting in sys")
 
         for doc in key_docs.keys():
-            key_tokens = self.get_doc_tokens_without_zeros(key_docs[doc],word_column)
-            sys_tokens = self.get_doc_tokens_without_zeros(sys_docs[doc],word_column)
+            key_tokens = self.get_doc_tokens_without_zeros(key_docs[doc], word_column)
+            sys_tokens = self.get_doc_tokens_without_zeros(sys_docs[doc], word_column)
             if len(key_tokens) != len(sys_tokens):
-                raise self.DataAlignError(len(key_tokens),len(sys_tokens),"Number of tokens (excluding zeros)")
-            if not unit_test: #for unit_test we do not check the actual tokens, as they may not the same
-                for i, (kt, st) in enumerate(zip(key_tokens,sys_tokens)):
+                raise self.DataAlignError(len(key_tokens), len(sys_tokens), "Number of tokens (excluding zeros)")
+            # for unit_test we do not check the actual tokens, as they may not be the same
+            if not unit_test:
+                for i, (kt, st) in enumerate(zip(key_tokens, sys_tokens)):
                     if kt != st:
-                        raise self.DataAlignError(kt,st,"Word {:d}".format(i+1))
+                        raise self.DataAlignError(kt, st, f"Word {i+1}")
