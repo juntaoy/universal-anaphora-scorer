@@ -74,8 +74,8 @@ class UAReader(Reader):
                         markables_is_zero[markable_id] = is_zero
 
                     if is_zero:
-                        markables_start[markable_id].append('{}.{}'.format(word_index,zero_index))
-                        markables_end[markable_id].append('{}.{}'.format(word_index,zero_index))
+                        markables_start[markable_id].append(f'{word_index}.{zero_index}')
+                        markables_end[markable_id].append(f'{word_index}.{zero_index}')
                     else:
                         markables_start[markable_id].append(word_index)
                         if single_word:
