@@ -50,6 +50,10 @@ Expected: CEAFe=4.4/7=0.63 [common=1+4/5+2/5=2.2, recall=2.2/3=0.73, Prec=2.2/4=
 Expected: BLANC=0.30 [recall_c=1/4, prec_c=1/4, recall_n=5/11, prec_n=5/17]
 Expected: LEA=0.36   [recall=(1+2+0)/6=0.5, prec=(1+3*(1/3)+2*0+0)/7=0.28]
 
+TC-ZA-6 -- response contains a mention starting at a zero token; processing should fail with CorefFormatError
+TC-ZA-7 -- response contains a mention ending at a zero token; processing should fail with CorefFormatError
+TC-ZA-8 -- response contains a discontinuous mention, whose first span is a zero token; processing should fail with CorefFormatError
+TC-ZA-9 -- response contains a discontinuous mention, whose other than first span is a zero token; processing should fail with CorefFormatError
 
 In TC-ZB both e and f are zeros
 TC-ZB-1 -- multiple zeros in the same postion and same cluster, perfect

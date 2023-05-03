@@ -2,6 +2,7 @@ import sys
 sys.path.insert(1, '..')
 from pytest import approx
 from scorer.ua.reader import UAReader
+from scorer.base.reader import CorefFormatError
 from scorer.eval.evaluator import evaluate_documents as evaluate
 from scorer.eval.evaluator import muc, b_cubed, ceafe, lea, ceafm,blancc,blancn
 
@@ -19,7 +20,10 @@ def read(key, response,test_type='original-conll',partial_match=False,partial_ma
     "keep_zeros":keep_zeros
   }
   reader = UAReader(**args)
-  reader.get_coref_infos('tests-ua/%s/%s' % (test_type,key),'tests-ua/%s/%s' % (test_type,response),unit_test=True)
+  try:
+    reader.get_coref_infos('tests-ua/%s/%s' % (test_type,key),'tests-ua/%s/%s' % (test_type,response),unit_test=True)
+  except CorefFormatError:
+    return None
   return reader.doc_coref_infos
 
 
@@ -919,6 +923,22 @@ def test_ZA5():
       2 * 0.5 * 2 / 7 / (0.5 + 2 / 7)])
   assert evaluate(doc, ceafm) == approx([0.66667, 0.57143, 0.61538], abs=TOL)
   assert evaluate(doc, [blancc, blancn]) == approx([0.35227, 0.27206, 0.30357], abs=TOL)
+
+def test_ZA6():
+  doc = read('TC-ZA.key', 'TC-ZA-6.response', 'zeros', keep_zeros=True)
+  assert doc is None
+
+def test_ZA7():
+  doc = read('TC-ZA.key', 'TC-ZA-7.response', 'zeros', keep_zeros=True)
+  assert doc is None
+
+def test_ZA8():
+  doc = read('TC-ZA.key', 'TC-ZA-8.response', 'zeros', keep_zeros=True)
+  assert doc is None
+
+def test_ZA9():
+  doc = read('TC-ZA.key', 'TC-ZA-9.response', 'zeros', keep_zeros=True)
+  assert doc is None
 
 def test_ZB1():
   doc = read('TC-ZB.key', 'TC-ZB-1.response','zeros',keep_zeros=True)

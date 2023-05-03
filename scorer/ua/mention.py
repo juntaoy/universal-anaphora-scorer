@@ -1,12 +1,15 @@
 from scorer.base.mention import Mention
+from scorer.base.reader import CorefFormatError
 
 class UAMention(Mention):
     def __init__(self, start, end, MIN, is_referring, is_split_antecedent=False, split_antecedent_sets=set(), is_zero=False):
         super().__init__()
 
         if is_zero:
-            assert(len(start)==len(end)==1)
-            assert(start[0] == end[0])
+            if not len(start) == len(end) == 1:
+                raise CorefFormatError(f'Zero mentions cannot be discontinuous: {list(zip(start, end))}')
+            if start[0] != end[0]:
+                raise CorefFormatError(f'Zero must consist of a single token: ({start[0]}, {end[0]})')
             self._words.append(start[0])
         else:
             for s, e in zip(start, end):

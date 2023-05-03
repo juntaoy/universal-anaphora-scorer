@@ -3,7 +3,7 @@ from udapi.core.document import Document
 from udapi.block.read.conllu import Conllu
 from collections import defaultdict, OrderedDict
 from scorer.corefud.mention import CorefUDMention
-from scorer.base.reader import Reader
+from scorer.base.reader import Reader, DataAlignError, CorefFormatError
 
 
 
@@ -20,15 +20,15 @@ class CorefUDReader(Reader):
         data12_trees = zip(data1.trees, data2.trees)
         for tree1, tree2 in data12_trees:
             if tree1.newdoc != tree2.newdoc:
-                raise self.DataAlignError(tree1, tree2, "Newdoc labels")
+                raise DataAlignError(tree1, tree2, "Newdoc labels")
             if tree1.sent_id != tree2.sent_id:
-                raise self.DataAlignError(tree1, tree2, "Sent IDs")
+                raise DataAlignError(tree1, tree2, "Sent IDs")
             # data12_nodes = zip(tree1.descendants_and_empty, tree2.descendants_and_empty)
             # The new version allow zeros to be positioned differently then the key.
             data12_nodes = zip(tree1.descendants, tree2.descendants)
             for node1, node2 in data12_nodes:
                 if node1.form != node2.form:
-                    raise self.DataAlignError(node1, node2, "Words")
+                    raise DataAlignError(node1, node2, "Words")
 
     def split_data_to_docs(self, data):
         word2docid = {}
@@ -49,7 +49,7 @@ class CorefUDReader(Reader):
                 words_docs = list(set([word2docid[w] for w in mention.words]))
                 if len(words_docs) > 1:
                     mention_str = ", ".join([str(w) for w in mention.words])
-                    raise self.CorefFormatError(
+                    raise CorefFormatError(
                         "Mention cannot cross a document boundary. The following does: " + mention_str)
                 if mention_doc and mention_doc != words_docs[0]:
                     logging.warning(

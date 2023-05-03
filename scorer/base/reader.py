@@ -2,25 +2,26 @@ import logging
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
+class DataAlignError(BaseException):
+    def __init__(self, key_node, sys_node, misalign_source="Words", key_name='key', sys_name='sys'):
+        self.key_node = key_node
+        self.sys_node = sys_node
+        self.misalign_source = misalign_source
+        self.key_name = key_name
+        self.sys_name = sys_name
+
+    def __str__(self):
+        return f"{self.misalign_source} in key and sys are not aligned: \
+                    {self.key_name}={str(self.key_node)}, {self.sys_name}={str(self.sys_node)}"
+
+class CorefFormatError(BaseException):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
 class Reader:
-    class DataAlignError(BaseException):
-        def __init__(self, key_node, sys_node, misalign_source="Words", key_name='key', sys_name='sys'):
-            self.key_node = key_node
-            self.sys_node = sys_node
-            self.misalign_source = misalign_source
-            self.key_name = key_name
-            self.sys_name = sys_name
-
-        def __str__(self):
-            return f"{self.misalign_source} in key and sys are not aligned: \
-                        {self.key_name}={str(self.key_node)}, {self.sys_name}={str(self.sys_node)}"
-
-    class CorefFormatError(BaseException):
-        def __init__(self, message):
-            self.message = message
-
-        def __str__(self):
-            return self.message
 
     def __init__(self,**kwargs):
         self._doc_coref_infos = {}

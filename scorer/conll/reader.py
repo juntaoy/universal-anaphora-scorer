@@ -1,6 +1,6 @@
 import logging
 from scorer.conll import mention as mention
-from scorer.base.reader import Reader
+from scorer.base.reader import Reader, CorefFormatError
 
 
 class CoNLLReader(Reader):
@@ -116,7 +116,7 @@ class CoNLLReader(Reader):
                     coref_opened = False
                     last_num = []
                 elif len(last_num) > 0:
-                    raise self.CorefFormatError("Incorrect coreference annotation: " + coref_column)
+                    raise CorefFormatError("Incorrect coreference annotation: " + coref_column)
 
             if i == len(coref_column) - 1:
                 if coref_opened and len(last_num) > 0:

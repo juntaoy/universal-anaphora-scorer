@@ -1,5 +1,5 @@
 import logging
-from scorer.base.reader import Reader
+from scorer.base.reader import Reader, DataAlignError, CorefFormatError
 from scorer.ua.mention import UAMention
 from collections import deque, defaultdict
 
@@ -28,7 +28,7 @@ class UAReader(Reader):
         markables_MIN = {}
         markables_coref_tag = {}
         markables_split = defaultdict(list)  # set_id: [markable_id_1, markable_id_2 ...]
-        markables_is_zero={}
+        markables_is_zero = {}
         bridging_antecedents = {}
         all_words = []
         stack = []
@@ -47,7 +47,7 @@ class UAReader(Reader):
                 if markable_annotations[0]:
                     # the close bracket
                     if is_zero:
-                        raise self.CorefFormatError(f'Zeros should not be used as start/end of the standard mentions. {line}')
+                        raise CorefFormatError(f'Zeros should not be used as start/end of the standard mentions. {line}')
                     if self.allow_boundary_crossing:
                         for markable_id in markable_annotations[0].split(")"):
                             if len(markable_id) > 0:
@@ -63,17 +63,16 @@ class UAReader(Reader):
                         markable_annotation = markable_annotation[:-1]
                     else:
                         if is_zero:
-                            raise self.CorefFormatError(
+                            raise CorefFormatError(
                                 f'Zeros should not be used as start/end of the standard mentions. {line}')
                         single_word = False
                     markable_info = dict(pair for pair in (p.split("=", 1) for p in markable_annotation.split('|')) if len(pair) == 2)
                     markable_id = markable_info['MarkableID']
                     cluster_id = markable_info['EntityID']
                     markables_cluster[markable_id] = cluster_id
-                    if markable_id not in markables_is_zero:
-                        markables_is_zero[markable_id] = is_zero
 
                     if is_zero:
+                        markables_is_zero[markable_id] = is_zero
                         markables_start[markable_id].append(f'{word_index}.{zero_index}')
                         markables_end[markable_id].append(f'{word_index}.{zero_index}')
                     else:
@@ -129,7 +128,7 @@ class UAReader(Reader):
                 [markables_start[markable_id][0], markables_end[markable_id][0]] if use_CRAFT_MIN else markables_MIN[
                     markable_id],
                 markables_coref_tag[markable_id],
-                is_zero = markables_is_zero[markable_id]
+                is_zero = markable_id in markables_is_zero
             )
             id2markable[markable_id] = m
             if markables_cluster[markable_id] not in clusters:
@@ -300,15 +299,15 @@ class UAReader(Reader):
         if len(key_docs.keys()) != len(sys_docs.keys()) or \
             len(key_docs.keys() - sys_docs.keys()) > 0 or \
             len(sys_docs.keys() - key_docs.keys()) > 0:
-            raise self.DataAlignError(key_docs.keys() - sys_docs.keys(), sys_docs.keys() - key_docs.keys(), "Documents", "doc missing in sys", "doc inserting in sys")
+            raise DataAlignError(key_docs.keys() - sys_docs.keys(), sys_docs.keys() - key_docs.keys(), "Documents", "doc missing in sys", "doc inserting in sys")
 
         for doc in key_docs.keys():
             key_tokens = self.get_doc_tokens_without_zeros(key_docs[doc], word_column)
             sys_tokens = self.get_doc_tokens_without_zeros(sys_docs[doc], word_column)
             if len(key_tokens) != len(sys_tokens):
-                raise self.DataAlignError(len(key_tokens), len(sys_tokens), "Number of tokens (excluding zeros)")
+                raise DataAlignError(len(key_tokens), len(sys_tokens), "Number of tokens (excluding zeros)")
             # for unit_test we do not check the actual tokens, as they may not be the same
             if not unit_test:
                 for i, (kt, st) in enumerate(zip(key_tokens, sys_tokens)):
                     if kt != st:
-                        raise self.DataAlignError(kt, st, f"Word {i+1}")
+                        raise DataAlignError(kt, st, f"Word {i+1}")
