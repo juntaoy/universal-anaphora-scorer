@@ -27,7 +27,7 @@ class UAReader(Reader):
         markables_end = defaultdict(list)
         markables_MIN = {}
         markables_coref_tag = {}
-        markables_split = {}  # set_id: [markable_id_1, markable_id_2 ...]
+        markables_split = defaultdict(list)  # set_id: [markable_id_1, markable_id_2 ...]
         markables_is_zero={}
         bridging_antecedents = {}
         all_words = []
@@ -101,11 +101,9 @@ class UAReader(Reader):
                         markables_coref_tag[markable_id] = 'non_referring'
 
                     if 'ElementOf' in markable_info:
-                        element_of = markable_info['ElementOf'].split(
-                            ',')  # for markable participate in multiple plural using , split the element_of, e.g. ElementOf=1,2
+                        # for a markable participating in multiple plurals split the elements on ",", e.g. in ElementOf=1,2
+                        element_of = markable_info['ElementOf'].split(',')
                         for ele_of in element_of:
-                            if ele_of not in markables_split:
-                                markables_split[ele_of] = []
                             markables_split[ele_of].append(markable_id)
             if self.keep_bridging and columns[bridging_column] != '_':
                 bridging_annotations = columns[bridging_column].split("(")
