@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(1, '..')
 from pytest import approx
 from scorer.ua.reader import UAReader
 from scorer.eval.evaluator import evaluate_documents as evaluate
