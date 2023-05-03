@@ -114,11 +114,11 @@ class UAReader(Reader):
                     bridging_antecedents[bridging_info['MarkableID']] = bridging_info['MentionAnchor']
 
             if is_zero:
-                zero_index+=1
+                zero_index += 1
             else:
                 all_words.append(columns[word_column])
-                zero_index=0
-                word_index+=1
+                zero_index = 0
+                word_index += 1
 
         clusters = {}
         id2markable = {}
