@@ -87,12 +87,13 @@ class UAReader(Reader):
                         markables_MIN[markable_id] = None
                         if self.partial_match and 'Min' in markable_info:
                             MIN_Span = markable_info['Min'].split(',')
-                            if len(MIN_Span) == 2:
-                                MIN_start = int(MIN_Span[0]) - 1
-                                MIN_end = int(MIN_Span[1]) - 1
-                            else:
-                                MIN_start = int(MIN_Span[0]) - 1
+                            MIN_start = int(MIN_Span[0]) - 1
+                            if len(MIN_Span) == 1:
                                 MIN_end = MIN_start
+                            else:
+                                if len(MIN_Span) > 2:
+                                    logging.warning(f"Attribute 'Min' of the markable with ID={markable_id} has more than two items. The tail is ignored.")
+                                MIN_end = int(MIN_Span[1]) - 1
                             markables_MIN[markable_id] = [MIN_start, MIN_end]
 
                     markables_coref_tag[markable_id] = 'referring'
