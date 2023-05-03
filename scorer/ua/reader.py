@@ -110,7 +110,7 @@ class UAReader(Reader):
                 for bridging_annotation in bridging_annotations[1:]:
                     if bridging_annotation.endswith(')'):
                         bridging_annotation = bridging_annotation[:-1]
-                    bridging_info = {p[:p.find('=')]: p[p.find('=') + 1:] for p in bridging_annotation.split('|')}
+                    bridging_info = dict(pair for pair in (p.split("=", 1) for p in bridging_annotation.split('|')) if len(pair) == 2)
                     bridging_antecedents[bridging_info['MarkableID']] = bridging_info['MentionAnchor']
 
             if is_zero:
