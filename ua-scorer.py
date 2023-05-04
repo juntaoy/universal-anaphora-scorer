@@ -182,7 +182,7 @@ def main():
         args['metrics'] = ['muc', 'bcub', 'ceafe']
 
     if args['only_split_antecedent']:
-        for must_true in ['keep_split_antecedent', 'keep_singletons']:
+        for must_true in ['keep_split_antecedents', 'keep_singletons']:
             if args[must_true] == False:
                 autoreset_msg(must_true, True, 'only_split_antecedent')
                 args[must_true] = True
@@ -191,7 +191,7 @@ def main():
                 metric_autoremove_msg(un_metric, 'only_split_antecedent')
 
     if args['evaluate_discourse_deixis']:
-        for must_true in ['keep_split_antecedent', 'keep_singletons']:
+        for must_true in ['keep_split_antecedents', 'keep_singletons']:
             if args[must_true] == False:
                 autoreset_msg(must_true, True, 'evaluate_discourse_deixis')
                 args[must_true] = True
@@ -210,7 +210,7 @@ def main():
     args['metrics'] = [(name, metric_dict[name]) for name in args['metrics']]
 
     coref_metrics = ['muc', 'bcub', 'ceafe', 'ceafm', 'blanc', 'lea', 'mention', 'zero']
-    has_coref_metrics = any([m in args['metrics'] for m in coref_metrics])
+    has_coref_metrics = any([m in args['metrics'][0] for m in coref_metrics])
 
     args['keep_non_referring'] = 'non-referring' in args['metrics']
     args['keep_bridging'] = 'bridging' in args['metrics']
@@ -230,7 +230,7 @@ def main():
         msg += 'coreferent markables'
         if args['keep_singletons']:
             msg += ', singletons'
-        if args['keep_split_antecedent']:
+        if args['keep_split_antecedents']:
             msg += ', split-antecedents'
         if args['keep_zeros']:
             msg += ', zeros (using {:s} match method)'.format(args['zero_match_method'])

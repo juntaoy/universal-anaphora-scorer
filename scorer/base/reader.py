@@ -23,7 +23,7 @@ class CorefFormatError(BaseException):
 
 class Reader:
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self._doc_coref_infos = {}
         self._doc_non_referring_infos = {}
         self._doc_bridging_infos = {}
