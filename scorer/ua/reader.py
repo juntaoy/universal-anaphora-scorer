@@ -252,19 +252,16 @@ class UAReader(Reader):
             self._doc_bridging_infos[doc] = (key_bridging_pairs, sys_bridging_pairs, sys_mention_key_cluster)
 
             if not self.keep_non_referring:
-                logging.debug('%s and %s non-referring markables are removed from the '
-                              'evaluations of the key and system files, respectively.'
-                              % (key_removed_non_referring, sys_removed_non_referring))
+                logging.debug(f'{key_removed_non_referring} and {sys_removed_non_referring} non-referring markables '
+                               'are removed from the evaluations of the key and system files, respectively.')
 
             if not self.keep_singletons:
-                logging.debug('%s and %s singletons are removed from the evaluations of '
-                              'the key and system files, respectively.'
-                              % (key_removed_singletons, sys_removed_singletons))
+                logging.debug(f'{key_removed_singletons} and {sys_removed_singletons} singletons are removed '
+                               'from the evaluations of the key and system files, respectively.')
 
             if not self.keep_zeros:
-                logging.debug('%s and %s zeros are removed from the evaluations of '
-                              'the key and system files, respectively.'
-                              % (key_removed_zeros, sys_removed_zeros))
+                logging.debug(f'{key_removed_zeros} and {sys_removed_zeros} zeros are removed from the evaluations of '
+                               'the key and system files, respectively.')
 
     def get_all_docs(self, path):
         all_docs = {}
