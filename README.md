@@ -64,8 +64,9 @@ The scorer support all the major corefernce metrics as well as scores commonly u
 * `blanc`: BLANC [Recasens and Hovy, 2011] 
 * `lea`: LEA [Moosavi and Strube, 2016]
 * `conll` **[default]**: the averaged CoNLL score (the average F1 of MUC, B-cubed and CEAFe) [Denis and Baldridge, 2009a; Pradhan et al., 2014]
-* `mention`: the mention F1 score when exact matching is used on mentions and mention overlapping score when partial matching is used
-* `zero`: (only for `corefud` format) the application-related coreference scores (Tuggener 2014) for zero anaphors 
+* `mention`: the mention F1 score when exact matching is used on mentions
+* `mor`: average mention overlap ratio when partial matching is used [Žabokrtský et al., 2022]
+* `zero`: (only for `corefud` format) the application-related coreference scores [Tuggener, 2014] for zero anaphors [Žabokrtský et al., 2022]
 * `non-referring`: (only for `ua` format) the F1 score for non-referring expressions
 * `bridging`: (only for `ua` format) the entity-based F1, mention-based F1 and bridging anaphora recognition F1 scores.
 * `all`: report all scores supported for specified format
@@ -273,6 +274,13 @@ The original Reference Coreference Scorer was developed by:
   A model theoretic coreference scoring scheme.
   In Proceedings of the 6th Message Understanding Conference, pages 45–52.
 
+  Zdeněk Žabokrtský, Miloslav Konopík, Anna Nedoluzhko, Michal Novák, Maciej Ogrodniczuk, Martin Popel, Ondřej Pražák, Jakub Sido, Daniel Zeman, and Yilun Zhu. 2022.
+  Findings of the Shared Task on Multilingual Coreference Resolution.
+  In Proceedings of the CRAC 2022 Shared Task on Multilingual Coreference Resolution, pages 1–17.
+
+  Don Tuggener. 2014.
+  Coreference Resolution Evaluation for Higher Level Applications.
+  In Proceedings of the 14th Conference of the European Chapter of the Association for Computational Linguistics, volume 2: Short Papers, pages 231–235.
 
 ## Acknowledgments
 
