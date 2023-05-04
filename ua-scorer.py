@@ -190,6 +190,10 @@ def main():
             if un_metric in args['metrics']:
                 metric_autoremove_msg(un_metric, 'only_split_antecedent')
 
+    if args['keep_split_antecedents'] and not args['keep_singletons']:
+        autoreset_msg('keep_singletons', True, 'keep_split_antecedents')
+        args['keep_singletons'] = True
+
     if args['evaluate_discourse_deixis']:
         for must_true in ['keep_split_antecedents', 'keep_singletons']:
             if args[must_true] == False:
