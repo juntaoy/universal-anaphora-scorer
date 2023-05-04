@@ -140,9 +140,7 @@ class UAReader(Reader):
         bridging_pairs = {}
         for anaphora, antecedent in bridging_antecedents.items():
             if not anaphora in id2markable or not antecedent in id2markable:
-                logging.warning(
-                    'Skip bridging pair ({}, {}) as markable_id does not exist in identity column!'.format(antecedent,
-                                                                                                           anaphora))
+                logging.warning(f'Skip bridging pair ({antecedent}, {anaphora}) as markable_id does not exist in identity column!')
                 continue
             bridging_pairs[id2markable[anaphora]] = id2markable[antecedent]
         return clusters, bridging_pairs
