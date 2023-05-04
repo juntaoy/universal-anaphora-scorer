@@ -54,13 +54,11 @@ def compatibility_check(args):
 
 
 def autoreset_msg(key, value, parent):
-    logging.warning(
-        'Auto reset: {:s} must be {:b} when {:s} is used, reset to required value.'.format(key, value, parent))
+    logging.warning(f'Auto reset: {key} must be {value} when {parent} is used, reset to required value.')
 
 
 def metric_autoremove_msg(key, parent):
-    logging.warning(
-        'Metric {:s} can not been used in conjunction with {:s}, removed from the evaluation.'.format(key, parent))
+    logging.warning(f'Metric {key} can not been used in conjunction with {parent}, removed from the evaluation.')
 
 
 SHARED_TASK_SETTINGS = {
@@ -183,7 +181,7 @@ def main():
 
     if args['only_split_antecedent']:
         for must_true in ['keep_split_antecedents', 'keep_singletons']:
-            if args[must_true] == False:
+            if not args[must_true]:
                 autoreset_msg(must_true, True, 'only_split_antecedent')
                 args[must_true] = True
         for un_metric in ['bridging', 'non-referring', 'zero']:
@@ -196,12 +194,12 @@ def main():
 
     if args['evaluate_discourse_deixis']:
         for must_true in ['keep_split_antecedents', 'keep_singletons']:
-            if args[must_true] == False:
+            if not args[must_true]:
                 autoreset_msg(must_true, True, 'evaluate_discourse_deixis')
                 args[must_true] = True
 
         for must_false in ['only_split_antecedent']:
-            if args[must_false] == True:
+            if args[must_false]:
                 autoreset_msg(must_false, False, 'evaluate_discourse_deixis')
                 args[must_false] = False
 
