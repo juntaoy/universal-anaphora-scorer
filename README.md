@@ -49,7 +49,7 @@ The following command evaluates coreference outputs:
 where `key` and `system` are the location of the key (gold) and system (predicted) files.
 
 ## Input Formats
-The scorer support three input formats (UA-exploded, CorefUD/UA-compact and CoNLL), the CoNLL format only support continuous mentions; the UA-exploded and CorefUD/UA-compact format in addition support discontinuous mentions. For detailed discussion on how discontinuous mentions were presented in those format please follow the link for specific format.  The option `[-f|--format]` can be used to specify the input format:
+The scorer supports three input formats (UA-exploded, CorefUD/UA-compact and CoNLL), the CoNLL format only support continuous mentions; the UA-exploded and CorefUD/UA-compact format in addition support discontinuous mentions. For detailed discussion on how discontinuous mentions were presented in those format please follow the link for specific format.  The option `[-f|--format]` can be used to specify the input format:
 
 * `ua` **[default]**: [UA-exploded format](https://github.com/UniversalAnaphora/UniversalAnaphora/blob/main/documents/UA_CONLL_U_Plus_proposal_v1.0.md) 
 * `corefud`: [CorefUD/UA-compact format](https://ufal.mff.cuni.cz/~zeman/2022/docs/corefud-1.0-format.pdf)
@@ -66,7 +66,7 @@ The scorer support all the major corefernce metrics as well as scores commonly u
 * `conll` **[default]**: the averaged CoNLL score (the average F1 of MUC, B-cubed and CEAFe) [Denis and Baldridge, 2009a; Pradhan et al., 2014]
 * `mention`: the mention F1 score when exact matching is used on mentions
 * `mor`: average mention overlap ratio when partial matching is used [Žabokrtský et al., 2022]
-* `zero`: (only for `corefud` format) the application-related coreference scores [Tuggener, 2014] for zero anaphors [Žabokrtský et al., 2022]
+* `zero`: (only for `corefud` format) the application-related coreference scores [Tuggener, 2014, 2016] for zero anaphors [Žabokrtský et al., 2022]
 * `non-referring`: (only for `ua` format) the F1 score for non-referring expressions
 * `bridging`: (only for `ua` format) the entity-based F1, mention-based F1 and bridging anaphora recognition F1 scores.
 * `all`: report all scores supported for specified format
@@ -281,6 +281,10 @@ The original Reference Coreference Scorer was developed by:
   Don Tuggener. 2014.
   Coreference Resolution Evaluation for Higher Level Applications.
   In Proceedings of the 14th Conference of the European Chapter of the Association for Computational Linguistics, volume 2: Short Papers, pages 231–235.
+
+  Don Tuggener. 2016.
+  Incremental Coreference Resolution for German.
+  University of Zurich, Faculty of Arts.
 
 ## Acknowledgments
 
