@@ -68,8 +68,8 @@ class Mention:
         """Partial matching method similar to the approach proposed by the CorefUD scorer.
         It allows the response to be part of the key and in the same time the response 
         must include all the words in MIN (head).
-        If the above condition is satisfied, a non-zero similarity score based on the
-        proportion of the common words (`num_of_common_words/total_words_in_key`) is returned.
+        If the above condition is satisfied, a non-zero similarity corresponding to the recall
+        (`num_of_common_words/total_words_in_key`; precision is 100% by definition) is returned.
         Otherwise 0 is returned.
         Current default partial matching.
         """
