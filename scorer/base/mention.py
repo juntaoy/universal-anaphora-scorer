@@ -91,7 +91,7 @@ class Mention:
         """
         return NotImplemented
 
-    def _partial_match_score(self, other, method='default'):
+    def partial_match_score(self, other, method='default'):
         if isinstance(other, self.__class__):
             if self.__eq__(other):
                 return 1

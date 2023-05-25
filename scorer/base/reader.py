@@ -138,7 +138,7 @@ class Reader:
                         if sm in sys_non_aligned:
                             for km in key_non_aligned:
                                 # if not key_used[j] and km.similarity_scores(sm, method='craft') > 0:
-                                if km._partial_match_score(sm, method='craft') > 0:
+                                if km.partial_match_score(sm, method='craft') > 0:
                                     if not key_used[km]:
                                         key_used[km] = True
                                         # print(str(km), str(sm))
@@ -152,7 +152,7 @@ class Reader:
                 similarity = np.zeros((len(key_non_aligned), len(sys_non_aligned)))
                 for i, km in enumerate(key_non_aligned):
                     for j, sm in enumerate(sys_non_aligned):
-                        similarity[i, j] = km._partial_match_score(sm, method=self.partial_match_method)
+                        similarity[i, j] = km.partial_match_score(sm, method=self.partial_match_method)
                 # print(similarity)
                 key_ind, sys_ind = linear_sum_assignment(-similarity)
                 for k, s in zip(key_ind, sys_ind):
