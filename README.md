@@ -94,7 +94,7 @@ and doesn't go beyond the annotated maximum boundary. To align the mentions
 in the key and response:
 * We first align the mentions based on the exact matching to exclude them from partial matching step. 
 * To align the remaining mentions, we first compute the recall (the precision will always be 100% according to our definition of partial matching) between all the mention pairs between key and response
-* The recalls are then used with the Kuhn-Munkres algorithm Kuhn (1955); Munkres (1957) to find the best alignment between those mentions.
+* The recalls are then used with the Kuhn-Munkres algorithm [Kuhn, 1955; Munkres, 1957] to find the best alignment between those mentions.
 
 To perform evaluation with partial mention matching using our default method, add one `-p` or `--partial-match` options to the input arguments.
 For instance, the following command reports the CoNLL evaluation metrics using default partial mention method:
@@ -102,7 +102,7 @@ For instance, the following command reports the CoNLL evaluation metrics using d
 `python ua-scorer.py key system -p` 
 
 ### Craft:
-The scorer has an option to allow use the partial mention matching method defined in CRAFT 2019 shared task (Baumgartner et al., 2019). The method considers 
+The scorer has an option to allow use the partial mention matching method defined in CRAFT 2019 shared task [Baumgartner et al., 2019]. The method considers 
 a predicted mention correct if any continuous span of the predicted mention overlaps with and doesn't go beyond the first span of the key mention. To perform evaluation 
 with partial mention matching using CRAFT method:
 
@@ -122,7 +122,7 @@ Apart from metrics, partial mention matching, zeros, the scorer has the followin
 * `-l|--keep-split-antecedents`: (only for `ua` format) if this option is included in the command, all split-antecedent in the key and system files will be included in the evaluation.
 * `-d|--evaluate-discourse-deixis`: (only for `ua` format) if this option is included in the command the scorer will only evaluate discourse deixis using the metrics specified.
 * `--only-split-antecedent`: (only for `ua` format) there is also an option to only assess the quality of the alignment between the split-antecedents in the key and system.
-* `--allow-boundary-crossing`: (only for `ua` format) this is used when partial mention overlapping (e.g. (a (b a) b) ) is allowed in the corpus you need include the markable_id in the close bracket for the mention
+* `--allow-boundary-crossing`: (only for `ua` format) this is used when partial mention overlapping (e.g. (a (b a) b) ) is allowed in the corpus. The markable_id needs to be included in the closing bracket for the mention.
 * `--np-only`: (only for `conll` format) evaluate only NP mentions
 * `--remove-nested-mentions`: (only for `conll` format) evaluate only non-nested mentions
 
@@ -161,7 +161,7 @@ The only case in which MUC handles singletons is when they are incorrectly inclu
 You can refer to Pradhan et al [2014] and Moosavi and Strube [2016] for more details about various evaluation metrics.
 
 ### Evaluating coreference relatons, singletons and zeros using partial mention matching (e.g. CRAC 2022)
-This evaluation mode is used by the CRAC 2022 shared task, it includes coreference relations, singletons, zeros (with gold zeros provided) but not split-antecedents. It reports MUC, B-cubed, CEAFe, CoNLL F1, mention overlapping scores and anaphora level scores for zero. Its corresponding command is:  
+This evaluation mode is used by the CRAC 2022 shared task. The primary score is CoNLL F1 score on coreference relations with partial mention matching, singletons excluded, zeros (with gold zeros provided) but not split-antecedents. In addition, it reports MUC, B-cubed, CEAFe, CEAFm, BLANC, LEA, mention overlap ratio and anaphora-level score for zero. Its corresponding command is:  
 
 `python ua-scorer.py key system -f corefud -sz -m muc bcub ceafe mention zero -p`
 
@@ -179,7 +179,7 @@ or using the `[-t|--shared-task]` shortcuts:
 `python ua-scorer.py key system -t craft19`
 
 
-### Evaluating coreference realations, singletons and non-referrings (e.g. CRAC 2018)
+### Evaluating coreference relations, singletons and non-referrings (e.g. CRAC 2018)
 
 In this evaluation setting, coreference relations, singletons and non-referring mentions are taken into account for evaluation.
 The coreference relations and singletons are evaluated using the coreference metrics while the non-referring expressions are scored separately.
@@ -285,6 +285,18 @@ The original Reference Coreference Scorer was developed by:
   Don Tuggener. 2016.
   Incremental Coreference Resolution for German.
   University of Zurich, Faculty of Arts.
+
+  Harold W. Kuhn. 1955.
+  The Hungarian Method for the assignment problem.
+  Naval Research Logistics Quarterly, 2: 83–97.
+
+  James Munkres. 1957.
+  Algorithms for the Assignment and Transportation Problems.
+  Journal of the Society for Industrial and Applied Mathematics, 5(1): 32–38.
+
+  William Baumgartner, Michael Bada, Sampo Pyysalo, Manuel R. Ciosici, Negacy Hailu, Harrison Pielke-Lombardo, Michael Regan, and Lawrence Hunter. 2019.
+  CRAFT Shared Tasks 2019 Overview — Integrated Structure, Semantics, and Coreference.
+  In Proceedings of the 5th Workshop on BioNLP Open Shared Tasks, pages 174–184.
 
 ## Acknowledgments
 
