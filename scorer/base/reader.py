@@ -133,21 +133,19 @@ class Reader:
             if use_CRAFT:
                 key_used = {km: False for km in key_non_aligned}
                 key_non_aligned = set(key_non_aligned)
-                for scl in sys_clusters:
-                    for sm in scl:
-                        if sm in sys_non_aligned:
-                            for km in key_non_aligned:
-                                # if not key_used[j] and km.similarity_scores(sm, method='craft') > 0:
-                                if km.partial_match_score(sm, method='craft') > 0:
-                                    if not key_used[km]:
-                                        key_used[km] = True
-                                        # print(str(km), str(sm))
-                                        p_num += 1
-                                        # sys_mention_key_cluster[sm] = sys_mention_key_cluster[km]
-                                        # key_mention_sys_cluster[km] = key_mention_sys_cluster[sm]
-                                        mention_alignment_dict[sm] = km
-                                        mention_alignment_dict[km] = sm
-                                    break
+                for sm in sys_non_aligned:
+                    for km in key_non_aligned:
+                        # if not key_used[j] and km.similarity_scores(sm, method='craft') > 0:
+                        if km.partial_match_score(sm, method='craft') > 0:
+                            if not key_used[km]:
+                                key_used[km] = True
+                                # print(str(km), str(sm))
+                                p_num += 1
+                                # sys_mention_key_cluster[sm] = sys_mention_key_cluster[km]
+                                # key_mention_sys_cluster[km] = key_mention_sys_cluster[sm]
+                                mention_alignment_dict[sm] = km
+                                mention_alignment_dict[km] = sm
+                            break
             else:
                 similarity = np.zeros((len(key_non_aligned), len(sys_non_aligned)))
                 for i, km in enumerate(key_non_aligned):
