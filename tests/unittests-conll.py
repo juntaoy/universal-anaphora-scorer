@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(1, '..')
 from pytest import approx
 from scorer.conll.reader import CoNLLReader
 from scorer.eval.evaluator import evaluate_documents as evaluate
