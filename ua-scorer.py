@@ -109,7 +109,7 @@ SHARED_TASK_SETTINGS = {
 
 
 def main():
-    task_parser = argparse.ArgumentParser()
+    task_parser = argparse.ArgumentParser(add_help=False)
     task_parser.add_argument('-t','--shared-task',
                            choices=['conll12', 'crac18', 'craft19', 'crac22', 'codicrac22ar', 'codicrac22br', 'codicrac22dd'],
                            help='use specific shared task settings, this will overridde all other settings, for more detail please check shared task website')
