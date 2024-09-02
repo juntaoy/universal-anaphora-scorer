@@ -161,7 +161,9 @@ def main():
     if args['shared_task']:
         key_file = args['key_file']
         sys_file = args['sys_file']
-        args = SHARED_TASK_SETTINGS[args['shared_task']]
+        share_args = SHARED_TASK_SETTINGS[args['shared_task']]
+        for key, val in share_args.items():
+            args[key] = val
         args['key_file'] = key_file
         args['sys_file'] = sys_file
     else:
